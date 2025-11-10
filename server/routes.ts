@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { generatePresentationTitle, generateSlideText, generatePresenterBio, generateGraphData, generateQuote } from "./lib/openai";
-import { getRandomPhotos, getRandomPhotosByQuery } from "./lib/unsplash";
+import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure } from "./lib/openai";
+import { getRandomPhotosByQuery } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -22,7 +22,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate presenter bio
       const bioData = await generatePresenterBio(presenterName, keywords, difficulty);
 
-      // Generate slides (mix of photos and text)
+      // Generate the complete presentation structure using LLM
+      const slideSpecs = await generatePresentationStructure(keywords, difficulty);
+
+      // Initialize slides array
       const slides = [];
       
       // First slide: Title
@@ -39,103 +42,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         facts: bioData.facts,
       });
 
-      // Calculate slide counts based on difficulty
-      // Special slides (graphs + quotes) percentage of total non-photo content
-      const specialSlidePercentages = {
-        easy: 0.2,    // 20% of non-photo slides
-        medium: 0.35, // 35% of non-photo slides
-        hard: 0.5,    // 50% of non-photo slides
-      };
-      
-      const totalContentSlides = 12; // Total slides after title and bio
-      const specialPercentage = specialSlidePercentages[difficulty];
-      
-      // Calculate counts
-      const photoCount = Math.floor(totalContentSlides * 0.65); // ~65% photos
-      const nonPhotoCount = totalContentSlides - photoCount;
-      const specialSlideCount = Math.round(nonPhotoCount * specialPercentage);
-      const textSlideCount = nonPhotoCount - specialSlideCount;
-      const graphCount = Math.round(specialSlideCount / 2);
-      const quoteCount = specialSlideCount - graphCount;
-      
-      // Get photos: first one MUST be related to keywords, rest MAY be related (mix of related and random)
-      const allPhotos = [];
+      // Process each slide spec and create actual slides
       const usedPhotoIds: string[] = [];
       
-      // First photo: always related to keywords
-      const firstPhoto = await getRandomPhotosByQuery(keywords.join(" "), usedPhotoIds);
-      allPhotos.push(firstPhoto);
-      usedPhotoIds.push(firstPhoto.id);
-      
-      // Remaining photos: randomly decide if related or completely random
-      for (let i = 1; i < photoCount; i++) {
-        const useKeyword = Math.random() > 0.5; // 50% chance to be related
-        const photo = useKeyword 
-          ? await getRandomPhotosByQuery(keywords[Math.floor(Math.random() * keywords.length)], usedPhotoIds)
-          : (await getRandomPhotos(1, usedPhotoIds))[0];
-        allPhotos.push(photo);
-        usedPhotoIds.push(photo.id);
+      for (const spec of slideSpecs) {
+        if (spec.type === "photo" && spec.photoSearchTerm) {
+          // Fetch photo using the search term from the LLM
+          const photo = await getRandomPhotosByQuery(spec.photoSearchTerm, usedPhotoIds);
+          usedPhotoIds.push(photo.id);
+          
+          slides.push({
+            type: "photo",
+            content: spec.photoSearchTerm,
+            imageUrl: photo.url,
+            photoAuthorName: photo.authorName,
+            photoAuthorUsername: photo.authorUsername,
+            photoAuthorUrl: photo.authorUrl,
+            photoUrl: photo.photoUrl,
+          });
+        } else if (spec.type === "text" && spec.text) {
+          slides.push({
+            type: "text",
+            content: spec.text,
+          });
+        } else if (spec.type === "quote" && spec.quote && spec.quoteAuthor && spec.quoteTitle) {
+          slides.push({
+            type: "quote",
+            content: spec.quote,
+            quote: spec.quote,
+            author: spec.quoteAuthor,
+            authorTitle: spec.quoteTitle,
+          });
+        } else if (spec.type === "graph" && spec.graphTitle && spec.graphData) {
+          slides.push({
+            type: "graph",
+            content: spec.graphTitle,
+            graphTitle: spec.graphTitle,
+            graphData: spec.graphData,
+          });
+        }
       }
-
-      // Generate all content slides
-      const contentSlides: any[] = [];
-      
-      // Add photo slides
-      for (let i = 0; i < photoCount; i++) {
-        const photo = allPhotos[i];
-        contentSlides.push({
-          type: "photo",
-          content: keywords[i % keywords.length],
-          imageUrl: photo.url,
-          photoAuthorName: photo.authorName,
-          photoAuthorUsername: photo.authorUsername,
-          photoAuthorUrl: photo.authorUrl,
-          photoUrl: photo.photoUrl,
-        });
-      }
-      
-      // Add text slides
-      for (let i = 0; i < textSlideCount; i++) {
-        const topic = keywords[Math.floor(Math.random() * keywords.length)];
-        const text = await generateSlideText(topic, i + 1, difficulty);
-        contentSlides.push({
-          type: "text",
-          content: text,
-        });
-      }
-      
-      // Add graph slides
-      for (let i = 0; i < graphCount; i++) {
-        const topic = keywords.join(" and ");
-        const graphData = await generateGraphData(topic, difficulty);
-        contentSlides.push({
-          type: "graph",
-          content: graphData.title,
-          graphTitle: graphData.title,
-          graphData: graphData.data,
-        });
-      }
-      
-      // Add quote slides
-      for (let i = 0; i < quoteCount; i++) {
-        const topic = keywords[Math.floor(Math.random() * keywords.length)];
-        const quoteData = await generateQuote(topic, difficulty);
-        contentSlides.push({
-          type: "quote",
-          content: quoteData.quote,
-          quote: quoteData.quote,
-          author: quoteData.author,
-          authorTitle: quoteData.title,
-        });
-      }
-      
-      // Shuffle content slides for variety
-      for (let i = contentSlides.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [contentSlides[i], contentSlides[j]] = [contentSlides[j], contentSlides[i]];
-      }
-      
-      slides.push(...contentSlides);
 
       // Add thank you slide at the end
       slides.push({

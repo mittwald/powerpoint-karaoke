@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { generatePresentationTitle, generateSlideText, generatePresenterBio, generateGraphData, generateQuote } from "./lib/openai";
-import { getRandomPhotos } from "./lib/unsplash";
+import { getRandomPhotos, getRandomPhotosByQuery } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -58,18 +58,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const graphCount = Math.round(specialSlideCount / 2);
       const quoteCount = specialSlideCount - graphCount;
       
-      // Get random photos based on keywords
-      const photos = await getRandomPhotos(keywords, photoCount);
+      // Get photos: first one related to keywords, rest are completely random
+      const firstPhoto = await getRandomPhotosByQuery(keywords.join(" "));
+      const randomPhotos = photoCount > 1 ? await getRandomPhotos(photoCount - 1) : [];
+      const allPhotos = [firstPhoto, ...randomPhotos];
 
       // Generate all content slides
       const contentSlides: any[] = [];
       
       // Add photo slides
       for (let i = 0; i < photoCount; i++) {
-        const photo = photos[i];
+        const photo = allPhotos[i];
         contentSlides.push({
           type: "photo",
-          content: keywords[i % keywords.length],
+          content: i === 0 ? keywords.join(", ") : "Random Photo",
           imageUrl: photo.url,
           photoAuthorName: photo.authorName,
           photoAuthorUsername: photo.authorUsername,

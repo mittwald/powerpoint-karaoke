@@ -14,7 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { keyword1, keyword2, keyword3, presenterName, difficulty } = validation.data;
-      const keywords = [keyword1, keyword2, keyword3];
+      const keywords = [keyword1, keyword2, keyword3].filter((k): k is string => !!k && k.trim() !== "");
 
       // Generate presentation title using OpenAI
       const title = await generatePresentationTitle(keywords, difficulty);

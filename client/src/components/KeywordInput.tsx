@@ -43,7 +43,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
             PowerPoint Karaoke
           </CardTitle>
           <CardDescription className="text-base">
-            Enter three random keywords to generate a hilarious presentation
+            Enter at least one keyword to generate a hilarious presentation
           </CardDescription>
         </CardHeader>
       <CardContent>
@@ -51,7 +51,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <div>
-                <FormLabel className="mb-2 block">Keywords</FormLabel>
+                <FormLabel className="mb-2 block">Keywords (2nd & 3rd optional)</FormLabel>
                 <div className="grid grid-cols-3 gap-2">
                   <FormField
                     control={form.control}
@@ -77,7 +77,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
                         <FormControl>
                           <Input
                             data-testid="input-keyword2"
-                            placeholder="e.g., Bananas"
+                            placeholder="Optional"
                             {...field}
                           />
                         </FormControl>
@@ -93,7 +93,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
                         <FormControl>
                           <Input
                             data-testid="input-keyword3"
-                            placeholder="e.g., Synergy"
+                            placeholder="Optional"
                             {...field}
                           />
                         </FormControl>

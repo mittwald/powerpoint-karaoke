@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const keywordInputSchema = z.object({
-  keyword1: z.string().min(1, "Keyword 1 is required"),
-  keyword2: z.string().min(1, "Keyword 2 is required"),
-  keyword3: z.string().min(1, "Keyword 3 is required"),
+  keyword1: z.string().min(1, "At least one keyword is required"),
+  keyword2: z.string().optional(),
+  keyword3: z.string().optional(),
   presenterName: z.string().min(1, "Presenter name is required"),
   difficulty: z.enum(["easy", "medium", "hard"]),
 });

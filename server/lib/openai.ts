@@ -41,7 +41,7 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
       messages: [
         {
           role: "system",
-          content: `You are a creative presentation title generator. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} The titles should combine the given keywords in unexpected ways.`,
+          content: `You are a creative presentation title generator. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} The titles should combine the given keywords in unexpected ways. You will answer in plain text, without any formatting.`,
         },
         {
           role: "user",

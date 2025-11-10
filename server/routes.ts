@@ -60,18 +60,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get photos: first one MUST be related to keywords, rest MAY be related (mix of related and random)
       const allPhotos = [];
+      const usedPhotoIds: string[] = [];
       
       // First photo: always related to keywords
-      const firstPhoto = await getRandomPhotosByQuery(keywords.join(" "));
+      const firstPhoto = await getRandomPhotosByQuery(keywords.join(" "), usedPhotoIds);
       allPhotos.push(firstPhoto);
+      usedPhotoIds.push(firstPhoto.id);
       
       // Remaining photos: randomly decide if related or completely random
       for (let i = 1; i < photoCount; i++) {
         const useKeyword = Math.random() > 0.5; // 50% chance to be related
         const photo = useKeyword 
-          ? await getRandomPhotosByQuery(keywords[Math.floor(Math.random() * keywords.length)])
-          : (await getRandomPhotos(1))[0];
+          ? await getRandomPhotosByQuery(keywords[Math.floor(Math.random() * keywords.length)], usedPhotoIds)
+          : (await getRandomPhotos(1, usedPhotoIds))[0];
         allPhotos.push(photo);
+        usedPhotoIds.push(photo.id);
       }
 
       // Generate all content slides

@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { generatePresentationTitle, generateSlideText } from "./lib/openai";
+import { generatePresentationTitle, generateSlideText, generatePresenterBio } from "./lib/openai";
 import { getRandomPhotos } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 
@@ -13,14 +13,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid keywords" });
       }
 
-      const { keyword1, keyword2, keyword3 } = validation.data;
+      const { keyword1, keyword2, keyword3, presenterName, difficulty } = validation.data;
       const keywords = [keyword1, keyword2, keyword3];
 
       // Generate presentation title using OpenAI
-      const title = await generatePresentationTitle(keywords);
+      const title = await generatePresentationTitle(keywords, difficulty);
+
+      // Generate presenter bio
+      const bio = await generatePresenterBio(presenterName, keywords, difficulty);
 
       // Generate slides (mix of photos and text)
       const slides = [];
+      
+      // First slide: Presenter bio
+      slides.push({
+        type: "text",
+        content: `${presenterName}\n\n${bio}`,
+      });
+
       const photoCount = 9;
       const textSlideCount = 3;
       
@@ -32,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (i % 4 === 3) {
           // Text slide
           const topic = keywords[Math.floor(Math.random() * keywords.length)];
-          const text = await generateSlideText(topic, i + 1);
+          const text = await generateSlideText(topic, i + 1, difficulty);
           slides.push({
             type: "text",
             content: text,

@@ -7,14 +7,33 @@ import PresentationTitle from "@/components/PresentationTitle";
 
 // TODO: remove mock functionality - replace with actual API calls
 const mockGenerateTitle = (keywords: KeywordInputType): string => {
+  const difficultyMultipliers = {
+    easy: 0,
+    medium: 1,
+    hard: 2,
+  };
+  
   const templates = [
-    `The Inevitable Rise of ${keywords.keyword1} ${keywords.keyword2} ${keywords.keyword3}`,
-    `${keywords.keyword1} Meets ${keywords.keyword2}: A ${keywords.keyword3} Story`,
-    `Why ${keywords.keyword1} is the ${keywords.keyword2} of ${keywords.keyword3}`,
-    `${keywords.keyword3} in the Age of ${keywords.keyword1} and ${keywords.keyword2}`,
-    `${keywords.keyword1}, ${keywords.keyword2}, and the Future of ${keywords.keyword3}`,
+    [
+      `The Rise of ${keywords.keyword1} ${keywords.keyword2}`,
+      `${keywords.keyword1} Meets ${keywords.keyword2}: A ${keywords.keyword3} Story`,
+      `Understanding ${keywords.keyword3} Through ${keywords.keyword1}`,
+    ],
+    [
+      `The Inevitable Rise of ${keywords.keyword1} ${keywords.keyword2} ${keywords.keyword3}`,
+      `Why ${keywords.keyword1} is the ${keywords.keyword2} of ${keywords.keyword3}`,
+      `${keywords.keyword3} in the Age of ${keywords.keyword1} and ${keywords.keyword2}`,
+    ],
+    [
+      `${keywords.keyword1}-Powered ${keywords.keyword2}: The ${keywords.keyword3} Revolution Nobody Asked For`,
+      `How I Learned to Stop Worrying and Love ${keywords.keyword1} ${keywords.keyword2} ${keywords.keyword3}`,
+      `${keywords.keyword1} ${keywords.keyword2} ${keywords.keyword3}: A Journey Through Chaos and Confusion`,
+    ],
   ];
-  return templates[Math.floor(Math.random() * templates.length)];
+  
+  const level = difficultyMultipliers[keywords.difficulty];
+  const options = templates[level];
+  return options[Math.floor(Math.random() * options.length)];
 };
 
 // TODO: remove mock functionality - replace with actual Unsplash API calls
@@ -22,18 +41,45 @@ const mockGenerateSlides = (keywords: KeywordInputType): Slide[] => {
   const slides: Slide[] = [];
   const searchTerms = [keywords.keyword1, keywords.keyword2, keywords.keyword3];
   
-  const textSlideTemplates = [
-    `"${keywords.keyword1} is just ${keywords.keyword2} in disguise"`,
-    `Key Benefits of ${keywords.keyword3}`,
-    `The ${keywords.keyword1} Revolution`,
-    `${keywords.keyword2}: A Case Study`,
-    `Common Misconceptions About ${keywords.keyword3}`,
-    `The Future is ${keywords.keyword1}`,
-    `Why We Need More ${keywords.keyword2}`,
-    `${keywords.keyword3}: Then vs. Now`,
-    `Breaking Down ${keywords.keyword1}`,
-    `The ${keywords.keyword2} Paradigm Shift`,
-  ];
+  // First slide: Presenter bio
+  const bioTemplates = {
+    easy: [
+      `${keywords.presenterName}, PhD in ${keywords.keyword1} Studies`,
+      `${keywords.presenterName}\n\nSenior Consultant specializing in ${keywords.keyword2}`,
+    ],
+    medium: [
+      `${keywords.presenterName}\n\nFormer ${keywords.keyword1} Whisperer, Currently pioneering ${keywords.keyword2} integration`,
+      `${keywords.presenterName}\n\n3-time ${keywords.keyword3} Champion, Self-proclaimed ${keywords.keyword1} Guru`,
+    ],
+    hard: [
+      `${keywords.presenterName}\n\nCEO of ${keywords.keyword1} Solutions Inc., Inventor of the ${keywords.keyword2} Protocol, Certified ${keywords.keyword3} Ninja`,
+      `${keywords.presenterName}\n\nTime Traveler from the year 2087, Interdimensional ${keywords.keyword1} Expert, ${keywords.keyword2} Enthusiast`,
+    ],
+  };
+  
+  const bioOptions = bioTemplates[keywords.difficulty];
+  slides.push({
+    type: "text",
+    content: bioOptions[Math.floor(Math.random() * bioOptions.length)],
+  });
+  
+  const textSlideTemplates = {
+    easy: [
+      `Key Benefits of ${keywords.keyword3}`,
+      `The ${keywords.keyword1} Revolution`,
+      `${keywords.keyword2}: A Case Study`,
+    ],
+    medium: [
+      `"${keywords.keyword1} is just ${keywords.keyword2} in disguise"`,
+      `Why We Need More ${keywords.keyword2}`,
+      `${keywords.keyword3}: Then vs. Now`,
+    ],
+    hard: [
+      `${keywords.keyword1}: Now with 300% More ${keywords.keyword2}!`,
+      `Warning: ${keywords.keyword3} May Cause Spontaneous ${keywords.keyword1}`,
+      `Scientists Baffled by ${keywords.keyword2} Discovery`,
+    ],
+  };
 
   const unsplashImages = [
     "photo-1506905925346-21bda4d32df4",
@@ -48,11 +94,13 @@ const mockGenerateSlides = (keywords: KeywordInputType): Slide[] => {
     "photo-1426604966848-d7adac402bff",
   ];
 
+  const textOptions = textSlideTemplates[keywords.difficulty];
+  
   for (let i = 0; i < 12; i++) {
     if (i % 4 === 3) {
       slides.push({
         type: "text",
-        content: textSlideTemplates[Math.floor(Math.random() * textSlideTemplates.length)],
+        content: textOptions[Math.floor(Math.random() * textOptions.length)],
       });
     } else {
       const imageId = unsplashImages[Math.floor(Math.random() * unsplashImages.length)];

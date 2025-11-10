@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles } from "lucide-react";
 
 interface KeywordInputProps {
@@ -19,6 +20,8 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
       keyword1: "",
       keyword2: "",
       keyword3: "",
+      presenterName: "",
+      difficulty: "medium",
     },
   });
 
@@ -83,6 +86,45 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="presenterName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Presenter Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        data-testid="input-presenter-name"
+                        placeholder="e.g., Dr. Jane Smith"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="difficulty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Difficulty (Absurdity Level)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-difficulty">
+                          <SelectValue placeholder="Select difficulty" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="easy">Easy (Slightly Amusing)</SelectItem>
+                        <SelectItem value="medium">Medium (Moderately Absurd)</SelectItem>
+                        <SelectItem value="hard">Hard (Completely Ridiculous)</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

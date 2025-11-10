@@ -58,10 +58,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const graphCount = Math.round(specialSlideCount / 2);
       const quoteCount = specialSlideCount - graphCount;
       
-      // Get photos: first one related to keywords, rest are completely random
+      // Get photos: first one MUST be related to keywords, rest MAY be related (mix of related and random)
+      const allPhotos = [];
+      
+      // First photo: always related to keywords
       const firstPhoto = await getRandomPhotosByQuery(keywords.join(" "));
-      const randomPhotos = photoCount > 1 ? await getRandomPhotos(photoCount - 1) : [];
-      const allPhotos = [firstPhoto, ...randomPhotos];
+      allPhotos.push(firstPhoto);
+      
+      // Remaining photos: randomly decide if related or completely random
+      for (let i = 1; i < photoCount; i++) {
+        const useKeyword = Math.random() > 0.5; // 50% chance to be related
+        const photo = useKeyword 
+          ? await getRandomPhotosByQuery(keywords[Math.floor(Math.random() * keywords.length)])
+          : (await getRandomPhotos(1))[0];
+        allPhotos.push(photo);
+      }
 
       // Generate all content slides
       const contentSlides: any[] = [];
@@ -71,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const photo = allPhotos[i];
         contentSlides.push({
           type: "photo",
-          content: i === 0 ? keywords.join(", ") : "Random Photo",
+          content: keywords[i % keywords.length],
           imageUrl: photo.url,
           photoAuthorName: photo.authorName,
           photoAuthorUsername: photo.authorUsername,

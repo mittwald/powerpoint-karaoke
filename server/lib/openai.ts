@@ -31,8 +31,8 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
     const openai = getOpenAIClient();
     
     const difficultyInstructions = {
-      easy: "Create a subtly humorous, professional-sounding presentation title.",
-      medium: "Create a moderately absurd but still believable presentation title.",
+      easy: "Create a professional-sounding presentation title.",
+      medium: "Create a humorous, slightly absurd but still professional-sounding and believable presentation title.",
       hard: "Create a completely ridiculous, over-the-top presentation title that sounds hilariously absurd.",
     };
 

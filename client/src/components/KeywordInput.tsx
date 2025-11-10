@@ -61,7 +61,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
                         <FormControl>
                           <Input
                             data-testid="input-keyword1"
-                            placeholder="e.g., Quantum"
+                            placeholder="e.g., TYPO3"
                             {...field}
                           />
                         </FormControl>
@@ -112,7 +112,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
                     <FormControl>
                       <Input
                         data-testid="input-presenter-name"
-                        placeholder="e.g., Dr. Jane Smith"
+                        placeholder="e.g., Prof. Dr. Luisa Faßbender"
                         {...field}
                       />
                     </FormControl>

@@ -13,6 +13,7 @@ function getOpenAIClient(): OpenAI {
     baseURL?: string;
   } = {
     apiKey: process.env.OPENAI_API_KEY,
+    baseURL: "https://llm.aihosting.mittwald.de/v1",
   };
   
   if (process.env.OPENAI_API_BASE_URL) {

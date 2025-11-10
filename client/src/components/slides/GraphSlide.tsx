@@ -16,10 +16,10 @@ export default function GraphSlide({ content, graphTitle, graphData }: GraphSlid
           {graphTitle || content}
         </h2>
         <div className="bg-card/50 p-8 rounded-lg border border-border">
-          <div className="flex items-end justify-between gap-4 h-80">
+          <div className="flex justify-between gap-4">
             {graphData.map((dataPoint, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-3">
-                <div className="w-full flex flex-col items-center justify-end flex-1">
+              <div key={index} className="flex-1 flex flex-col items-center">
+                <div className="w-full flex flex-col items-center justify-end h-80">
                   <div className="text-xl md:text-2xl font-bold text-primary mb-2">
                     {dataPoint.value}
                   </div>
@@ -31,8 +31,10 @@ export default function GraphSlide({ content, graphTitle, graphData }: GraphSlid
                     }}
                   />
                 </div>
-                <div className="text-sm md:text-base text-center text-muted-foreground font-medium max-w-full break-words">
-                  {dataPoint.label}
+                <div className="h-16 flex items-start justify-center mt-3">
+                  <div className="text-sm md:text-base text-center text-muted-foreground font-medium max-w-full break-words line-clamp-3">
+                    {dataPoint.label}
+                  </div>
                 </div>
               </div>
             ))}

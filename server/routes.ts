@@ -20,15 +20,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const title = await generatePresentationTitle(keywords, difficulty);
 
       // Generate presenter bio
-      const bio = await generatePresenterBio(presenterName, keywords, difficulty);
+      const bioData = await generatePresenterBio(presenterName, keywords, difficulty);
 
       // Generate slides (mix of photos and text)
       const slides = [];
       
-      // First slide: Presenter bio
+      // First slide: Title
       slides.push({
-        type: "text",
-        content: `${presenterName}\n\n${bio}`,
+        type: "title",
+        content: title,
+      });
+      
+      // Second slide: Presenter bio
+      slides.push({
+        type: "bio",
+        content: presenterName,
+        bio: bioData.bio,
+        facts: bioData.facts,
       });
 
       const photoCount = 9;

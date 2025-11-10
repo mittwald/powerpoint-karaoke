@@ -3,7 +3,6 @@ import { type KeywordInput as KeywordInputType, type Slide } from "@shared/schem
 import KeywordInput from "@/components/KeywordInput";
 import PresentationSlide from "@/components/PresentationSlide";
 import PresentationControls from "@/components/PresentationControls";
-import PresentationTitle from "@/components/PresentationTitle";
 
 // TODO: remove mock functionality - replace with actual API calls
 const mockGenerateTitle = (keywords: KeywordInputType): string => {
@@ -41,26 +40,54 @@ const mockGenerateSlides = (keywords: KeywordInputType): Slide[] => {
   const slides: Slide[] = [];
   const searchTerms = [keywords.keyword1, keywords.keyword2, keywords.keyword3];
   
-  // First slide: Presenter bio
+  // First slide: Title
+  const title = mockGenerateTitle(keywords);
+  slides.push({
+    type: "title",
+    content: title,
+  });
+  
+  // Second slide: Presenter bio with facts
   const bioTemplates = {
     easy: [
-      `${keywords.presenterName}, PhD in ${keywords.keyword1} Studies`,
-      `${keywords.presenterName}\n\nSenior Consultant specializing in ${keywords.keyword2}`,
+      `Senior Consultant specializing in ${keywords.keyword2}`,
+      `PhD in ${keywords.keyword1} Studies from MIT`,
     ],
     medium: [
-      `${keywords.presenterName}\n\nFormer ${keywords.keyword1} Whisperer, Currently pioneering ${keywords.keyword2} integration`,
-      `${keywords.presenterName}\n\n3-time ${keywords.keyword3} Champion, Self-proclaimed ${keywords.keyword1} Guru`,
+      `Former ${keywords.keyword1} Whisperer, Currently pioneering ${keywords.keyword2} integration`,
+      `3-time ${keywords.keyword3} Champion, Self-proclaimed ${keywords.keyword1} Guru`,
     ],
     hard: [
-      `${keywords.presenterName}\n\nCEO of ${keywords.keyword1} Solutions Inc., Inventor of the ${keywords.keyword2} Protocol, Certified ${keywords.keyword3} Ninja`,
-      `${keywords.presenterName}\n\nTime Traveler from the year 2087, Interdimensional ${keywords.keyword1} Expert, ${keywords.keyword2} Enthusiast`,
+      `CEO of ${keywords.keyword1} Solutions Inc., Inventor of the ${keywords.keyword2} Protocol, Certified ${keywords.keyword3} Ninja`,
+      `Time Traveler from the year 2087, Interdimensional ${keywords.keyword1} Expert, ${keywords.keyword2} Enthusiast`,
+    ],
+  };
+  
+  const factsTemplates = {
+    easy: [
+      [`Published 15 papers on ${keywords.keyword1}`, `Guest speaker at ${keywords.keyword2} conference 2024`, `Enjoys hiking on weekends`],
+      [`10+ years in ${keywords.keyword3} consulting`, `Featured in Forbes Under 40`, `Avid chess player`],
+    ],
+    medium: [
+      [`Once ${keywords.keyword1}-ed for 72 hours straight`, `Holds world record for fastest ${keywords.keyword2} implementation`, `Can recite ${keywords.keyword3} backwards`, `Banned from 3 countries for excessive ${keywords.keyword1}`],
+      [`Trained dolphins to understand ${keywords.keyword2}`, `Survived a ${keywords.keyword3} explosion`, `Owns 47 ${keywords.keyword1} patents`, `Once arm-wrestled a robot`],
+    ],
+    hard: [
+      [`Invented ${keywords.keyword1} in a dream`, `Communicates telepathically with ${keywords.keyword2}`, `Was briefly a unicorn in 2019`, `Discovered ${keywords.keyword3} on Mars`, `Can taste colors`],
+      [`Time Magazine Person of the Year 2087`, `Holds PhD from Hogwarts in ${keywords.keyword1}`, `Once defeated a supercomputer using only ${keywords.keyword2}`, `Claims to be immortal`, `Won Nobel Prize (from the future)`],
     ],
   };
   
   const bioOptions = bioTemplates[keywords.difficulty];
+  const factsOptions = factsTemplates[keywords.difficulty];
+  const selectedBio = bioOptions[Math.floor(Math.random() * bioOptions.length)];
+  const selectedFacts = factsOptions[Math.floor(Math.random() * factsOptions.length)];
+  
   slides.push({
-    type: "text",
-    content: bioOptions[Math.floor(Math.random() * bioOptions.length)],
+    type: "bio",
+    content: keywords.presenterName,
+    bio: selectedBio,
+    facts: selectedFacts,
   });
   
   const textSlideTemplates = {
@@ -126,9 +153,7 @@ export default function Home() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPresenting, setIsPresenting] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showTitle, setShowTitle] = useState(false);
 
   const handleKeywordSubmit = async (data: KeywordInputType) => {
     setIsLoading(true);
@@ -152,10 +177,6 @@ export default function Home() {
       setSlides(result.slides);
       setCurrentSlide(0);
       setIsPresenting(true);
-      setIsPlaying(true);
-      setShowTitle(true);
-
-      setTimeout(() => setShowTitle(false), 4000);
     } catch (error) {
       console.error("Error:", error);
       // Fallback to mock data if API fails
@@ -166,10 +187,6 @@ export default function Home() {
       setSlides(generatedSlides);
       setCurrentSlide(0);
       setIsPresenting(true);
-      setIsPlaying(true);
-      setShowTitle(true);
-
-      setTimeout(() => setShowTitle(false), 4000);
     } finally {
       setIsLoading(false);
     }
@@ -177,38 +194,16 @@ export default function Home() {
 
   const handlePrevious = useCallback(() => {
     setCurrentSlide(prev => Math.max(0, prev - 1));
-    setIsPlaying(false);
   }, []);
 
   const handleNext = useCallback(() => {
     setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1));
-    setIsPlaying(false);
   }, [slides.length]);
-
-  const handleTogglePlay = useCallback(() => {
-    setIsPlaying(prev => !prev);
-  }, []);
 
   const handleExit = useCallback(() => {
     setIsPresenting(false);
-    setIsPlaying(false);
     setCurrentSlide(0);
-    setShowTitle(false);
   }, []);
-
-  useEffect(() => {
-    if (!isPlaying || !isPresenting) return;
-
-    const timer = setTimeout(() => {
-      if (currentSlide < slides.length - 1) {
-        setCurrentSlide(prev => prev + 1);
-      } else {
-        setIsPlaying(false);
-      }
-    }, 8000);
-
-    return () => clearTimeout(timer);
-  }, [isPlaying, currentSlide, slides.length, isPresenting]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -250,14 +245,11 @@ export default function Home() {
               isActive={index === currentSlide}
             />
           ))}
-          <PresentationTitle title={presentationTitle} show={showTitle} />
           <PresentationControls
             currentSlide={currentSlide}
             totalSlides={slides.length}
-            isPlaying={isPlaying}
             onPrevious={handlePrevious}
             onNext={handleNext}
-            onTogglePlay={handleTogglePlay}
             onExit={handleExit}
           />
         </div>

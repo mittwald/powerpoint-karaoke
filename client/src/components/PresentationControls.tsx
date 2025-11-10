@@ -1,23 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Play, Pause, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface PresentationControlsProps {
   currentSlide: number;
   totalSlides: number;
-  isPlaying: boolean;
   onPrevious: () => void;
   onNext: () => void;
-  onTogglePlay: () => void;
   onExit: () => void;
 }
 
 export default function PresentationControls({
   currentSlide,
   totalSlides,
-  isPlaying,
   onPrevious,
   onNext,
-  onTogglePlay,
   onExit,
 }: PresentationControlsProps) {
   return (
@@ -37,14 +33,6 @@ export default function PresentationControls({
           disabled={currentSlide === 0}
         >
           <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <Button
-          data-testid="button-play-pause"
-          size="icon"
-          variant="ghost"
-          onClick={onTogglePlay}
-        >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
         </Button>
         <Button
           data-testid="button-next"

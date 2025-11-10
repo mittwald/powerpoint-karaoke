@@ -18,9 +18,11 @@ export const presentationSchema = z.object({
 export type Presentation = z.infer<typeof presentationSchema>;
 
 export const slideSchema = z.object({
-  type: z.enum(["photo", "text"]),
+  type: z.enum(["photo", "text", "title", "bio"]),
   content: z.string(),
   imageUrl: z.string().optional(),
+  bio: z.string().optional(),
+  facts: z.array(z.string()).optional(),
 });
 
 export type Slide = z.infer<typeof slideSchema>;

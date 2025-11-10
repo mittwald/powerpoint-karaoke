@@ -41,14 +41,20 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
   }
 }
 
-export async function generatePresenterBio(presenterName: string, keywords: string[], difficulty: string): Promise<string> {
+export async function generatePresenterBio(presenterName: string, keywords: string[], difficulty: string): Promise<{ bio: string; facts: string[] }> {
   try {
     const openai = getOpenAIClient();
     
     const difficultyInstructions = {
-      easy: "Create a mildly amusing fictional bio with one or two unusual credentials.",
-      medium: "Create a moderately absurd fictional bio with several ridiculous but creative credentials.",
-      hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements.",
+      easy: "Create a mildly amusing fictional bio with one or two unusual credentials. Add 2-3 fun facts that are slightly quirky.",
+      medium: "Create a moderately absurd fictional bio with several ridiculous but creative credentials. Add 3-4 fun facts that are absurd and humorous.",
+      hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements. Add 4-5 fun facts that are wildly absurd and ridiculous.",
+    };
+
+    const factCount = {
+      easy: 3,
+      medium: 4,
+      hard: 5,
     };
 
     const response = await openai.chat.completions.create({
@@ -56,19 +62,35 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
       messages: [
         {
           role: "system",
-          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Keep it to 2-3 sentences.`,
+          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Return a JSON object with "bio" (2-3 sentences) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings).`,
         },
         {
           role: "user",
-          content: `Create a bio for ${presenterName}, an expert in: ${keywords.join(", ")}.`,
+          content: `Create a bio and fun facts for ${presenterName}, an expert in: ${keywords.join(", ")}.`,
         },
       ],
+      response_format: { type: "json_object" },
     });
 
-    return response.choices[0].message.content?.trim() || `${presenterName}, Expert`;
+    const content = response.choices[0].message.content?.trim();
+    if (content) {
+      const parsed = JSON.parse(content);
+      return {
+        bio: parsed.bio || `${presenterName}, Expert`,
+        facts: parsed.facts || [],
+      };
+    }
+    
+    return {
+      bio: `${presenterName}, Expert`,
+      facts: [],
+    };
   } catch (error) {
     console.error("Error generating bio:", error);
-    return `${presenterName}, Expert`;
+    return {
+      bio: `${presenterName}, Expert`,
+      facts: [],
+    };
   }
 }
 

@@ -65,6 +65,11 @@ const mockGenerateSlides = (keywords: KeywordInputType): Slide[] => {
     }
   }
 
+  slides.push({
+    type: "text",
+    content: "Thank You!",
+  });
+
   return slides;
 };
 

@@ -53,9 +53,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate counts
       const photoCount = Math.floor(totalContentSlides * 0.65); // ~65% photos
       const nonPhotoCount = totalContentSlides - photoCount;
-      const specialSlideCount = Math.floor(nonPhotoCount * specialPercentage);
+      const specialSlideCount = Math.round(nonPhotoCount * specialPercentage);
       const textSlideCount = nonPhotoCount - specialSlideCount;
-      const graphCount = Math.floor(specialSlideCount / 2);
+      const graphCount = Math.round(specialSlideCount / 2);
       const quoteCount = specialSlideCount - graphCount;
       
       // Get random photos based on keywords

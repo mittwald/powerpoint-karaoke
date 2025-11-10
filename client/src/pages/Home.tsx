@@ -85,21 +85,46 @@ export default function Home() {
   const handleKeywordSubmit = async (data: KeywordInputType) => {
     setIsLoading(true);
     
-    // TODO: replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const title = mockGenerateTitle(data);
-    const generatedSlides = mockGenerateSlides(data);
-    
-    setPresentationTitle(title);
-    setSlides(generatedSlides);
-    setCurrentSlide(0);
-    setIsPresenting(true);
-    setIsPlaying(true);
-    setShowTitle(true);
-    setIsLoading(false);
+    try {
+      const response = await fetch("/api/generate-presentation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    setTimeout(() => setShowTitle(false), 4000);
+      if (!response.ok) {
+        throw new Error("Failed to generate presentation");
+      }
+
+      const result = await response.json();
+      
+      setPresentationTitle(result.title);
+      setSlides(result.slides);
+      setCurrentSlide(0);
+      setIsPresenting(true);
+      setIsPlaying(true);
+      setShowTitle(true);
+
+      setTimeout(() => setShowTitle(false), 4000);
+    } catch (error) {
+      console.error("Error:", error);
+      // Fallback to mock data if API fails
+      const title = mockGenerateTitle(data);
+      const generatedSlides = mockGenerateSlides(data);
+      
+      setPresentationTitle(title);
+      setSlides(generatedSlides);
+      setCurrentSlide(0);
+      setIsPresenting(true);
+      setIsPlaying(true);
+      setShowTitle(true);
+
+      setTimeout(() => setShowTitle(false), 4000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePrevious = useCallback(() => {

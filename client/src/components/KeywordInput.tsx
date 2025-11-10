@@ -50,57 +50,59 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="keyword1"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Keyword 1</FormLabel>
-                    <FormControl>
-                      <Input
-                        data-testid="input-keyword1"
-                        placeholder="e.g., Quantum"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="keyword2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Keyword 2</FormLabel>
-                    <FormControl>
-                      <Input
-                        data-testid="input-keyword2"
-                        placeholder="e.g., Bananas"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="keyword3"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Keyword 3</FormLabel>
-                    <FormControl>
-                      <Input
-                        data-testid="input-keyword3"
-                        placeholder="e.g., Synergy"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div>
+                <FormLabel className="mb-2 block">Keywords</FormLabel>
+                <div className="grid grid-cols-3 gap-2">
+                  <FormField
+                    control={form.control}
+                    name="keyword1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            data-testid="input-keyword1"
+                            placeholder="e.g., Quantum"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="keyword2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            data-testid="input-keyword2"
+                            placeholder="e.g., Bananas"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="keyword3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            data-testid="input-keyword3"
+                            placeholder="e.g., Synergy"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               <FormField
                 control={form.control}
                 name="presenterName"

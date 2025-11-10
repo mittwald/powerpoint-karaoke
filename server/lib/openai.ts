@@ -45,7 +45,7 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
         },
         {
           role: "user",
-          content: `Create a presentation title using these three keywords: ${keywords.join(", ")}.`,
+          content: `Create a presentation title using these keywords: ${keywords.join(", ")}.`,
         },
       ],
     });
@@ -62,15 +62,15 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
     const openai = getOpenAIClient();
     
     const difficultyInstructions = {
-      easy: "Create a mildly amusing fictional bio with one or two unusual credentials. Add 2-3 fun facts that are slightly quirky.",
-      medium: "Create a moderately absurd fictional bio with several ridiculous but creative credentials. Add 3-4 fun facts that are absurd and humorous.",
-      hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements. Add 4-5 fun facts that are wildly absurd and ridiculous.",
+      easy: "Create a professional sounding fictional bio with one or two unusual credentials. Add 2 fun facts that are slightly quirky.",
+      medium: "Create a moderately absurd, but still professional sounding fictional bio with several ridiculous but creative credentials. Add 3 fun facts that are slightly absurd and humorous.",
+      hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements. Add 4 fun facts that are wildly absurd and ridiculous.",
     };
 
     const factCount = {
-      easy: 3,
-      medium: 4,
-      hard: 5,
+      easy: 2,
+      medium: 3,
+      hard: 3,
     };
 
     const response = await openai.chat.completions.create({
@@ -78,7 +78,7 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
       messages: [
         {
           role: "system",
-          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Return a JSON object with "bio" (2-3 sentences) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings).`,
+          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Return a JSON object with "bio" (1-2 sentences) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings).`,
         },
         {
           role: "user",
@@ -115,7 +115,7 @@ export async function generateSlideText(topic: string, slideNumber: number, diff
     const openai = getOpenAIClient();
     
     const difficultyInstructions = {
-      easy: "Generate slightly amusing but believable statements.",
+      easy: "Generate slightly amusing but believable and professional sounding statements.",
       medium: "Generate moderately absurd but creative statements.",
       hard: "Generate completely ridiculous, over-the-top absurd statements.",
     };
@@ -125,7 +125,7 @@ export async function generateSlideText(topic: string, slideNumber: number, diff
       messages: [
         {
           role: "system",
-          content: `You are creating text slides for a PowerPoint karaoke presentation. Generate short, punchy statements that could appear on a presentation slide. They should be vaguely related to the topic. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]}`,
+          content: `You are creating text slides for a PowerPoint karaoke presentation. Generate short, punchy statements that could appear on a presentation slide. They should be related to the topic. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]}. Answer in plain text without any formatting.`,
         },
         {
           role: "user",

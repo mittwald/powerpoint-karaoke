@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { generatePresentationTitle, generateSlideText, generatePresenterBio } from "./lib/openai";
+import { generatePresentationTitle, generateSlideText, generatePresenterBio, generateGraphData, generateQuote } from "./lib/openai";
 import { getRandomPhotos } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 
@@ -39,32 +39,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
         facts: bioData.facts,
       });
 
-      const photoCount = 9;
-      const textSlideCount = 3;
+      // Calculate slide counts based on difficulty
+      // Special slides (graphs + quotes) percentage of total non-photo content
+      const specialSlidePercentages = {
+        easy: 0.2,    // 20% of non-photo slides
+        medium: 0.35, // 35% of non-photo slides
+        hard: 0.5,    // 50% of non-photo slides
+      };
+      
+      const totalContentSlides = 12; // Total slides after title and bio
+      const specialPercentage = specialSlidePercentages[difficulty];
+      
+      // Calculate counts
+      const photoCount = Math.floor(totalContentSlides * 0.65); // ~65% photos
+      const nonPhotoCount = totalContentSlides - photoCount;
+      const specialSlideCount = Math.floor(nonPhotoCount * specialPercentage);
+      const textSlideCount = nonPhotoCount - specialSlideCount;
+      const graphCount = Math.floor(specialSlideCount / 2);
+      const quoteCount = specialSlideCount - graphCount;
       
       // Get random photos based on keywords
       const photos = await getRandomPhotos(keywords, photoCount);
 
-      // Create slide sequence: mostly photos with occasional text slides
-      for (let i = 0; i < photoCount + textSlideCount; i++) {
-        if (i % 4 === 3) {
-          // Text slide
-          const topic = keywords[Math.floor(Math.random() * keywords.length)];
-          const text = await generateSlideText(topic, i + 1, difficulty);
-          slides.push({
-            type: "text",
-            content: text,
-          });
-        } else {
-          // Photo slide
-          const photoIndex = Math.floor(i - Math.floor(i / 4));
-          slides.push({
-            type: "photo",
-            content: keywords[photoIndex % keywords.length],
-            imageUrl: photos[photoIndex],
-          });
-        }
+      // Generate all content slides
+      const contentSlides: any[] = [];
+      
+      // Add photo slides
+      for (let i = 0; i < photoCount; i++) {
+        contentSlides.push({
+          type: "photo",
+          content: keywords[i % keywords.length],
+          imageUrl: photos[i],
+        });
       }
+      
+      // Add text slides
+      for (let i = 0; i < textSlideCount; i++) {
+        const topic = keywords[Math.floor(Math.random() * keywords.length)];
+        const text = await generateSlideText(topic, i + 1, difficulty);
+        contentSlides.push({
+          type: "text",
+          content: text,
+        });
+      }
+      
+      // Add graph slides
+      for (let i = 0; i < graphCount; i++) {
+        const topic = keywords.join(" and ");
+        const graphData = await generateGraphData(topic, difficulty);
+        contentSlides.push({
+          type: "graph",
+          content: graphData.title,
+          graphTitle: graphData.title,
+          graphData: graphData.data,
+        });
+      }
+      
+      // Add quote slides
+      for (let i = 0; i < quoteCount; i++) {
+        const topic = keywords[Math.floor(Math.random() * keywords.length)];
+        const quoteData = await generateQuote(topic, difficulty);
+        contentSlides.push({
+          type: "quote",
+          content: quoteData.quote,
+          quote: quoteData.quote,
+          author: quoteData.author,
+          authorTitle: quoteData.title,
+        });
+      }
+      
+      // Shuffle content slides for variety
+      for (let i = contentSlides.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [contentSlides[i], contentSlides[j]] = [contentSlides[j], contentSlides[i]];
+      }
+      
+      slides.push(...contentSlides);
 
       // Add thank you slide at the end
       slides.push({

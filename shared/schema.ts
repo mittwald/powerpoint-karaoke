@@ -17,12 +17,24 @@ export const presentationSchema = z.object({
 
 export type Presentation = z.infer<typeof presentationSchema>;
 
+export const graphDataPointSchema = z.object({
+  label: z.string(),
+  value: z.number(),
+});
+
+export type GraphDataPoint = z.infer<typeof graphDataPointSchema>;
+
 export const slideSchema = z.object({
-  type: z.enum(["photo", "text", "title", "bio"]),
+  type: z.enum(["photo", "text", "title", "bio", "graph", "quote"]),
   content: z.string(),
   imageUrl: z.string().optional(),
   bio: z.string().optional(),
   facts: z.array(z.string()).optional(),
+  graphData: z.array(graphDataPointSchema).optional(),
+  graphTitle: z.string().optional(),
+  quote: z.string().optional(),
+  author: z.string().optional(),
+  authorTitle: z.string().optional(),
 });
 
 export type Slide = z.infer<typeof slideSchema>;

@@ -140,3 +140,100 @@ export async function generateSlideText(topic: string, slideNumber: number, diff
     return "Key Takeaway";
   }
 }
+
+export async function generateGraphData(topic: string, difficulty: string): Promise<{ title: string; data: Array<{ label: string; value: number }> }> {
+  try {
+    const openai = getOpenAIClient();
+    
+    const difficultyInstructions = {
+      easy: "Generate a mildly amusing graph with plausible-sounding data.",
+      medium: "Generate a moderately absurd graph with creative but implausible data.",
+      hard: "Generate a completely ridiculous graph with wildly absurd and hilarious data.",
+    };
+
+    const response = await openai.chat.completions.create({
+      model: getModel(),
+      messages: [
+        {
+          role: "system",
+          content: `You are creating graph data for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Return a JSON object with "title" (graph title, max 50 chars) and "data" (array of 5-7 objects with "label" and "value" fields). Values should be between 10 and 100.`,
+        },
+        {
+          role: "user",
+          content: `Generate graph data related to: ${topic}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const content = response.choices[0].message.content?.trim();
+    if (content) {
+      const parsed = JSON.parse(content);
+      return {
+        title: parsed.title || "Data Analysis",
+        data: parsed.data || [],
+      };
+    }
+    
+    return {
+      title: "Data Analysis",
+      data: [],
+    };
+  } catch (error) {
+    console.error("Error generating graph data:", error);
+    return {
+      title: "Data Analysis",
+      data: [],
+    };
+  }
+}
+
+export async function generateQuote(topic: string, difficulty: string): Promise<{ quote: string; author: string; title: string }> {
+  try {
+    const openai = getOpenAIClient();
+    
+    const difficultyInstructions = {
+      easy: "Generate a slightly humorous fake expert quote with a believable author name and title.",
+      medium: "Generate a moderately absurd fake expert quote with a creative but implausible author and title.",
+      hard: "Generate a completely ridiculous and hilarious fake expert quote with an absurd author name and outrageous title.",
+    };
+
+    const response = await openai.chat.completions.create({
+      model: getModel(),
+      messages: [
+        {
+          role: "system",
+          content: `You are creating fake expert quotes for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Return a JSON object with "quote" (the fake quote, 1-2 sentences), "author" (fake expert name), and "title" (their fake credentials/title).`,
+        },
+        {
+          role: "user",
+          content: `Generate a fake expert quote related to: ${topic}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const content = response.choices[0].message.content?.trim();
+    if (content) {
+      const parsed = JSON.parse(content);
+      return {
+        quote: parsed.quote || "This is groundbreaking.",
+        author: parsed.author || "Dr. Expert",
+        title: parsed.title || "Leading Authority",
+      };
+    }
+    
+    return {
+      quote: "This is groundbreaking.",
+      author: "Dr. Expert",
+      title: "Leading Authority",
+    };
+  } catch (error) {
+    console.error("Error generating quote:", error);
+    return {
+      quote: "This is groundbreaking.",
+      author: "Dr. Expert",
+      title: "Leading Authority",
+    };
+  }
+}

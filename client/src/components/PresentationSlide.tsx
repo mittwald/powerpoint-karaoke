@@ -83,7 +83,71 @@ export default function PresentationSlide({ slide, isActive }: PresentationSlide
     );
   }
 
-  // Text slide
+  // Graph slide
+  if (slide.type === "graph" && slide.graphData && slide.graphData.length > 0) {
+    const maxValue = Math.max(...slide.graphData.map(d => d.value));
+    
+    return (
+      <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-background via-accent/10 to-muted/20 p-8 md:p-16">
+        <div className="max-w-5xl w-full space-y-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center">
+            {slide.graphTitle || slide.content}
+          </h2>
+          <div className="bg-card/50 p-8 rounded-lg border border-border">
+            <div className="flex items-end justify-between gap-4 h-80">
+              {slide.graphData.map((dataPoint, index) => (
+                <div key={index} className="flex-1 flex flex-col items-center gap-3">
+                  <div className="w-full flex flex-col items-center justify-end flex-1">
+                    <div className="text-xl md:text-2xl font-bold text-primary mb-2">
+                      {dataPoint.value}
+                    </div>
+                    <div
+                      className="w-full bg-primary rounded-t-md transition-all"
+                      style={{
+                        height: `${(dataPoint.value / maxValue) * 100}%`,
+                        minHeight: "20px",
+                      }}
+                    />
+                  </div>
+                  <div className="text-sm md:text-base text-center text-muted-foreground font-medium max-w-full break-words">
+                    {dataPoint.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Quote slide
+  if (slide.type === "quote" && slide.quote) {
+    return (
+      <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-muted/30 via-background to-accent/10 p-8 md:p-16">
+        <div className="max-w-4xl w-full space-y-8">
+          <div className="relative">
+            <div className="text-8xl md:text-9xl text-primary/20 absolute -top-8 -left-4">"</div>
+            <blockquote className="text-2xl md:text-3xl lg:text-4xl font-medium text-foreground leading-relaxed italic pl-8 md:pl-12">
+              {slide.quote}
+            </blockquote>
+          </div>
+          <div className="pl-8 md:pl-12 space-y-1">
+            <p className="text-xl md:text-2xl font-semibold text-foreground">
+              — {slide.author}
+            </p>
+            {slide.authorTitle && (
+              <p className="text-lg md:text-xl text-muted-foreground">
+                {slide.authorTitle}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Text slide (default)
   const backgroundIndex = Math.abs(slide.content.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)) % textSlideBackgrounds.length;
   const backgroundColor = textSlideBackgrounds[backgroundIndex];
 

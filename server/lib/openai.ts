@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const DEFAULT_MODEL = "gpt-5";
+const DEFAULT_MODEL = "gpt-oss-120b";
 
 function getOpenAIClient(): OpenAI {
   if (!process.env.OPENAI_API_KEY) {

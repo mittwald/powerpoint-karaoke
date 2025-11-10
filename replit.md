@@ -25,7 +25,15 @@ A web application that generates humorous PowerPoint karaoke presentations from 
 
 ## Environment Variables
 - `OPENAI_API_KEY`: Required for AI-generated titles and slide text
+- `OPENAI_API_BASE_URL`: Optional - Override the OpenAI API base URL (for OpenAI-compatible APIs)
+- `OPENAI_MODEL`: Optional - Override the default model (default: gpt-5)
 - `SESSION_SECRET`: Already configured
+
+### OpenAI-Compatible APIs
+The app supports any OpenAI-compatible API by setting the base URL:
+- Set `OPENAI_API_BASE_URL` to point to your API endpoint
+- Set `OPENAI_MODEL` to specify which model to use
+- Example: Azure OpenAI, LocalAI, or any other compatible service
 
 ## Project Structure
 ```

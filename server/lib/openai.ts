@@ -1,13 +1,29 @@
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+const DEFAULT_MODEL = "gpt-5";
+
 function getOpenAIClient(): OpenAI {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY environment variable is not set");
   }
-  return new OpenAI({ 
-    apiKey: process.env.OPENAI_API_KEY 
-  });
+  
+  const config: {
+    apiKey: string;
+    baseURL?: string;
+  } = {
+    apiKey: process.env.OPENAI_API_KEY,
+  };
+  
+  if (process.env.OPENAI_API_BASE_URL) {
+    config.baseURL = process.env.OPENAI_API_BASE_URL;
+  }
+  
+  return new OpenAI(config);
+}
+
+function getModel(): string {
+  return process.env.OPENAI_MODEL || DEFAULT_MODEL;
 }
 
 export async function generatePresentationTitle(keywords: string[], difficulty: string): Promise<string> {
@@ -21,7 +37,7 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
     };
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: getModel(),
       messages: [
         {
           role: "system",
@@ -58,7 +74,7 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
     };
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: getModel(),
       messages: [
         {
           role: "system",
@@ -105,7 +121,7 @@ export async function generateSlideText(topic: string, slideNumber: number, diff
     };
 
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: getModel(),
       messages: [
         {
           role: "system",

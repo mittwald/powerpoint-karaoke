@@ -258,7 +258,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-background via-accent/5 to-primary/5">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-primary">
       <KeywordInput onSubmit={handleKeywordSubmit} isLoading={isLoading} />
     </div>
   );

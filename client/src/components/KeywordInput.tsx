@@ -28,7 +28,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
 
   return (
     <div className="w-full max-w-2xl space-y-6">
-      <div className="flex justify-center mb-8 bg-primary px-8 py-6 rounded-md">
+      <div className="flex justify-center mb-8">
         <img 
           src={mittwaldLogo} 
           alt="mittwald" 
@@ -156,12 +156,12 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
       </CardContent>
     </Card>
     
-    <div className="text-center text-sm text-muted-foreground mt-6">
+    <div className="text-center text-sm text-primary-foreground/80 mt-6">
       <a 
         href="https://www.mittwald.de/mstudio/ai-hosting" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors"
+        className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors text-primary-foreground/90 hover:text-primary-foreground"
         data-testid="link-mittwald-footer"
       >
         Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> with mittwald AI hosting

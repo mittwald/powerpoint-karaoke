@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Heart } from "lucide-react";
+import mittwaldLogo from "@assets/mittwald_logo.svg";
 
 interface KeywordInputProps {
   onSubmit: (data: KeywordInput) => void;
@@ -26,15 +27,25 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
   });
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader className="text-center space-y-2">
-        <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          PowerPoint Karaoke
-        </CardTitle>
-        <CardDescription className="text-base">
-          Enter three random keywords to generate a hilarious presentation
-        </CardDescription>
-      </CardHeader>
+    <div className="w-full max-w-2xl space-y-6">
+      <div className="flex justify-center mb-8">
+        <img 
+          src={mittwaldLogo} 
+          alt="mittwald" 
+          className="h-12"
+          data-testid="img-mittwald-logo"
+        />
+      </div>
+      
+      <Card className="w-full">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            PowerPoint Karaoke
+          </CardTitle>
+          <CardDescription className="text-base">
+            Enter three random keywords to generate a hilarious presentation
+          </CardDescription>
+        </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -144,5 +155,18 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
         </Form>
       </CardContent>
     </Card>
+    
+    <div className="text-center text-sm text-muted-foreground mt-6">
+      <a 
+        href="https://www.mittwald.de/mstudio/ai-hosting" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors"
+        data-testid="link-mittwald-footer"
+      >
+        Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> with mittwald AI hosting
+      </a>
+    </div>
+  </div>
   );
 }

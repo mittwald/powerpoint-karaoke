@@ -28,7 +28,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
 
   return (
     <div className="w-full max-w-2xl space-y-6">
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-8 bg-primary px-8 py-6 rounded-md">
         <img 
           src={mittwaldLogo} 
           alt="mittwald" 

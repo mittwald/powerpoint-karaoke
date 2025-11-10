@@ -166,7 +166,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
         className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors text-primary-foreground/90 hover:text-primary-foreground"
         data-testid="link-mittwald-footer"
       >
-        Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> with mittwald AI hosting
+        Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> and mittwald AI hosting
       </a>
     </div>
   </div>

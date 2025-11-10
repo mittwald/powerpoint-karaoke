@@ -13,17 +13,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid keywords" });
       }
 
-      const { keyword1, keyword2, keyword3, presenterName, difficulty } = validation.data;
+      const { keyword1, keyword2, keyword3, presenterName, difficulty, language } = validation.data;
       const keywords = [keyword1, keyword2, keyword3].filter((k): k is string => !!k && k.trim() !== "");
 
       // Generate presentation title using OpenAI
-      const title = await generatePresentationTitle(keywords, difficulty);
+      const title = await generatePresentationTitle(keywords, difficulty, language);
 
       // Generate presenter bio
-      const bioData = await generatePresenterBio(presenterName, keywords, difficulty);
+      const bioData = await generatePresenterBio(presenterName, keywords, difficulty, language);
 
       // Generate the complete presentation structure using LLM
-      const slideSpecs = await generatePresentationStructure(keywords, difficulty);
+      const slideSpecs = await generatePresentationStructure(keywords, difficulty, language);
 
       // Initialize slides array
       const slides = [];

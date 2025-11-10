@@ -26,9 +26,14 @@ function getModel(): string {
   return process.env.OPENAI_MODEL || DEFAULT_MODEL;
 }
 
-export async function generatePresentationTitle(keywords: string[], difficulty: string): Promise<string> {
+export async function generatePresentationTitle(keywords: string[], difficulty: string, language: string): Promise<string> {
   try {
     const openai = getOpenAIClient();
+    
+    const languageInstructions = {
+      english: "Generate the title in English.",
+      german: "Generate the title in German (Deutsch).",
+    };
     
     const difficultyInstructions = {
       easy: "Create a professional-sounding presentation title.",
@@ -41,7 +46,7 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
       messages: [
         {
           role: "system",
-          content: `You are a creative presentation title generator. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} The titles should combine the given keywords in unexpected ways. You will answer in plain text, without any formatting.`,
+          content: `You are a creative presentation title generator. ${languageInstructions[language as keyof typeof languageInstructions]} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} The titles should combine the given keywords in unexpected ways. You will answer in plain text, without any formatting.`,
         },
         {
           role: "user",
@@ -57,9 +62,14 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
   }
 }
 
-export async function generatePresenterBio(presenterName: string, keywords: string[], difficulty: string): Promise<{ bio: string; facts: string[] }> {
+export async function generatePresenterBio(presenterName: string, keywords: string[], difficulty: string, language: string): Promise<{ bio: string; facts: string[] }> {
   try {
     const openai = getOpenAIClient();
+    
+    const languageInstructions = {
+      english: "Generate all content in English.",
+      german: "Generate all content in German (Deutsch).",
+    };
     
     const difficultyInstructions = {
       easy: "Create a professional sounding fictional bio with one or two unusual credentials. Add 2 fun facts that are slightly quirky.",
@@ -78,7 +88,7 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
       messages: [
         {
           role: "system",
-          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Return a JSON object with "bio" (1-2 sentences) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings).`,
+          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${languageInstructions[language as keyof typeof languageInstructions]} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Return a JSON object with "bio" (1-2 sentences) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings).`,
         },
         {
           role: "user",
@@ -251,10 +261,16 @@ interface SlideSpec {
 
 export async function generatePresentationStructure(
   keywords: string[], 
-  difficulty: string
+  difficulty: string,
+  language: string
 ): Promise<SlideSpec[]> {
   try {
     const openai = getOpenAIClient();
+    
+    const languageInstructions = {
+      english: "Generate all text content in English.",
+      german: "Generate all text content in German (Deutsch). Use proper German grammar and vocabulary.",
+    };
     
     const difficultyInstructions = {
       easy: `Create a coherent, professional presentation structure that follows a logical narrative. 
@@ -283,6 +299,8 @@ export async function generatePresentationStructure(
         {
           role: "system",
           content: `You are creating a complete PowerPoint karaoke presentation structure. Generate exactly 13 content slides that form a coherent (or absurd, depending on difficulty) narrative story.
+
+${languageInstructions[language as keyof typeof languageInstructions]}
 
 ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]}
 

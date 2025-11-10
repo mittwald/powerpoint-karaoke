@@ -6,6 +6,7 @@ export const keywordInputSchema = z.object({
   keyword3: z.string().optional(),
   presenterName: z.string().min(1, "Presenter name is required"),
   difficulty: z.enum(["easy", "medium", "hard"]),
+  language: z.enum(["english", "german"]).default("english"),
 });
 
 export type KeywordInput = z.infer<typeof keywordInputSchema>;

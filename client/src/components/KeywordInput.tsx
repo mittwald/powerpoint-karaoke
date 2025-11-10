@@ -23,6 +23,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
       keyword3: "",
       presenterName: "",
       difficulty: "medium",
+      language: "english",
     },
   });
 
@@ -120,28 +121,51 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="difficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Difficulty (Absurdity Level)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-difficulty">
-                          <SelectValue placeholder="Select difficulty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="easy">Easy (Slightly Amusing)</SelectItem>
-                        <SelectItem value="medium">Medium (Moderately Absurd)</SelectItem>
-                        <SelectItem value="hard">Hard (Completely Ridiculous)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="difficulty"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Difficulty (Absurdity Level)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-difficulty">
+                            <SelectValue placeholder="Select difficulty" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="easy">Easy (Slightly Amusing)</SelectItem>
+                          <SelectItem value="medium">Medium (Moderately Absurd)</SelectItem>
+                          <SelectItem value="hard">Hard (Completely Ridiculous)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Language</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-language">
+                            <SelectValue placeholder="Select language" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="english">English</SelectItem>
+                          <SelectItem value="german">German</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             <Button
               data-testid="button-generate"

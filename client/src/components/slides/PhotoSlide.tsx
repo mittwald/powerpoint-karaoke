@@ -1,9 +1,19 @@
 interface PhotoSlideProps {
   content: string;
   imageUrl: string;
+  photoAuthorName?: string;
+  photoAuthorUsername?: string;
+  photoAuthorUrl?: string;
+  photoUrl?: string;
 }
 
-export default function PhotoSlide({ content, imageUrl }: PhotoSlideProps) {
+export default function PhotoSlide({ 
+  content, 
+  imageUrl, 
+  photoAuthorName, 
+  photoAuthorUrl,
+  photoUrl 
+}: PhotoSlideProps) {
   return (
     <div className="absolute inset-0 w-full h-full">
       <img
@@ -12,6 +22,37 @@ export default function PhotoSlide({ content, imageUrl }: PhotoSlideProps) {
         className="w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+      
+      {photoAuthorName && (
+        <div className="absolute bottom-4 left-4 text-white/90 text-sm flex items-center gap-2 bg-black/30 backdrop-blur-sm px-3 py-2 rounded">
+          <span>Photo by</span>
+          {photoAuthorUrl ? (
+            <a 
+              href={photoAuthorUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white transition-colors"
+            >
+              {photoAuthorName}
+            </a>
+          ) : (
+            <span className="font-medium">{photoAuthorName}</span>
+          )}
+          <span>on</span>
+          {photoUrl ? (
+            <a 
+              href={photoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white transition-colors"
+            >
+              Unsplash
+            </a>
+          ) : (
+            <span className="font-medium">Unsplash</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

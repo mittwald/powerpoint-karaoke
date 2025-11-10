@@ -66,10 +66,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Add photo slides
       for (let i = 0; i < photoCount; i++) {
+        const photo = photos[i];
         contentSlides.push({
           type: "photo",
           content: keywords[i % keywords.length],
-          imageUrl: photos[i],
+          imageUrl: photo.url,
+          photoAuthorName: photo.authorName,
+          photoAuthorUsername: photo.authorUsername,
+          photoAuthorUrl: photo.authorUrl,
+          photoUrl: photo.photoUrl,
         });
       }
       

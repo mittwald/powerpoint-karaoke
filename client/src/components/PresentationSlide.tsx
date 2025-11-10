@@ -23,7 +23,14 @@ export default function PresentationSlide({ slide, isActive }: PresentationSlide
   }
 
   if (slide.type === "photo" && slide.imageUrl) {
-    return <PhotoSlide content={slide.content} imageUrl={slide.imageUrl} />;
+    return <PhotoSlide 
+      content={slide.content} 
+      imageUrl={slide.imageUrl}
+      photoAuthorName={slide.photoAuthorName}
+      photoAuthorUsername={slide.photoAuthorUsername}
+      photoAuthorUrl={slide.photoAuthorUrl}
+      photoUrl={slide.photoUrl}
+    />;
   }
 
   if (slide.type === "graph" && slide.graphData && slide.graphData.length > 0) {

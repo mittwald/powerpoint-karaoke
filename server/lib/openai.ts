@@ -74,7 +74,7 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
     const difficultyInstructions = {
       easy: "Create a professional sounding fictional bio with one or two unusual credentials. Add 2 fun facts that are slightly quirky.",
       medium: "Create a moderately absurd, but still professional sounding fictional bio with several ridiculous but creative credentials. Add 3 fun facts that are slightly absurd and humorous.",
-      hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements. Add 4 fun facts that are wildly absurd and ridiculous.",
+      hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements. Add 3 fun facts that are wildly absurd and ridiculous.",
     };
 
     const factCount = {
@@ -88,7 +88,7 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
       messages: [
         {
           role: "system",
-          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${languageInstructions[language as keyof typeof languageInstructions]} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. Return a JSON object with "bio" (1-2 sentences) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings).`,
+          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${languageInstructions[language as keyof typeof languageInstructions]} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. IMPORTANT: Keep bio to maximum 200 characters (1-2 short sentences). Keep each fun fact to maximum 120 characters. Return a JSON object with "bio" (string, max 200 chars) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings, each max 120 chars).`,
         },
         {
           role: "user",
@@ -101,10 +101,19 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
     const content = response.choices[0].message.content?.trim();
     if (content) {
       const parsed = JSON.parse(content);
-      return {
-        bio: parsed.bio || `${presenterName}, Expert`,
-        facts: parsed.facts || [],
-      };
+      
+      // Enforce length limits with truncation and type safety
+      const rawBio = parsed.bio;
+      const bio = String(rawBio || `${presenterName}, Expert`).substring(0, 200);
+      
+      const rawFacts = parsed.facts;
+      const facts = Array.isArray(rawFacts)
+        ? rawFacts
+            .slice(0, 3)
+            .map((fact: unknown) => String(fact).substring(0, 120))
+        : [];
+      
+      return { bio, facts };
     }
     
     return {

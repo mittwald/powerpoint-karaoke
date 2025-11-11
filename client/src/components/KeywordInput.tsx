@@ -182,16 +182,40 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
       </CardContent>
     </Card>
     
-    <div className="text-center text-sm text-primary-foreground/80 mt-6">
-      <a 
-        href="https://www.mittwald.de/mstudio/ai-hosting" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors text-primary-foreground/90 hover:text-primary-foreground"
-        data-testid="link-mittwald-footer"
-      >
-        Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> and mittwald AI hosting
-      </a>
+    <div className="space-y-3 mt-6">
+      <div className="text-center text-sm text-primary-foreground/80">
+        <a 
+          href="https://www.mittwald.de/mstudio/ai-hosting" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors text-primary-foreground/90 hover:text-primary-foreground"
+          data-testid="link-mittwald-footer"
+        >
+          Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> and mittwald AI hosting
+        </a>
+      </div>
+      
+      <div className="flex items-center justify-center gap-4 text-xs text-primary-foreground/60">
+        <a 
+          href="https://www.mittwald.de/impressum" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="hover-elevate active-elevate-2 px-2 py-1 rounded transition-colors hover:text-primary-foreground/80"
+          data-testid="link-impressum"
+        >
+          Impressum
+        </a>
+        <span className="text-primary-foreground/40">•</span>
+        <a 
+          href="https://github.com/mittwald/powerpoint-karaoke" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="hover-elevate active-elevate-2 px-2 py-1 rounded transition-colors hover:text-primary-foreground/80"
+          data-testid="link-github"
+        >
+          GitHub
+        </a>
+      </div>
     </div>
   </div>
   );

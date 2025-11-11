@@ -1,8 +1,39 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import fs from "fs";
+import path from "path";
 
 const app = express();
+
+// Logging utility
+function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+
+// Production static file serving
+function serveStatic(app: express.Express) {
+  const distPath = path.resolve(import.meta.dirname, "public");
+
+  if (!fs.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+    );
+  }
+
+  app.use(express.static(distPath));
+
+  // fall through to index.html if the file doesn't exist
+  app.use("*", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+}
 
 declare module 'http' {
   interface IncomingMessage {
@@ -61,6 +92,11 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    // Dynamic import to avoid loading Vite in production
+    // Using variable assignment makes import "non-analyzable" by esbuild,
+    // preventing bundling of vite.ts and its dependencies
+    const viteModule = "./vite";
+    const { setupVite } = await import(viteModule);
     await setupVite(app, server);
   } else {
     serveStatic(app);

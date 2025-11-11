@@ -7,6 +7,7 @@ A web application that generates humorous PowerPoint karaoke presentations from 
 - Keyword input interface (3 keywords)
 - Language selector (English/German)
 - Difficulty selector (Easy/Medium/Hard) - controls narrative coherence
+- **Loading screen with humorous messages**: Entertaining overlay during presentation generation
 - AI-generated presentation titles and content using OpenAI
 - Full-screen presentation mode
 - Mix of photo slides (from Unsplash), text slides, quote slides, graph slides, and bio slide
@@ -48,6 +49,7 @@ client/
   src/
     components/
       KeywordInput.tsx - Form for entering keywords, language, and difficulty
+      LoadingScreen.tsx - Humorous loading overlay with rotating messages
       PresentationSlide.tsx - Individual slide renderer
       PresentationControls.tsx - Navigation controls
       slides/
@@ -82,14 +84,16 @@ shared/
 ## User Flow
 1. User enters 1-3 keywords, presenter name, difficulty level, and language
 2. Clicks "Generate Presentation"
-3. Backend uses OpenAI to generate complete presentation structure with coherent narrative
-4. Backend fetches photos from Unsplash (with duplicate prevention)
-5. Backend saves presentation to database with unique UUID
-6. User is redirected to `/presentation/{id}`
-7. Presentation loads from database and displays in full-screen mode
-8. User can navigate manually or use keyboard shortcuts
-9. **Shareable**: User can copy URL to share presentation with anyone
-10. Presentations persist indefinitely in database
+3. **Loading screen appears** with animated spinner and rotating humorous messages
+4. Backend uses OpenAI to generate complete presentation structure with coherent narrative
+5. Backend fetches photos from Unsplash (with duplicate prevention)
+6. Backend saves presentation to database with unique UUID
+7. User is redirected to `/presentation/{id}` (loading screen disappears)
+8. Presentation loads from database and displays in full-screen mode
+9. User can navigate manually or use keyboard shortcuts
+10. **Shareable**: User can copy URL to share presentation with anyone
+11. Presentations persist indefinitely in database
+12. **Error handling**: If generation fails, loading screen dismisses, form data is preserved, and error toast appears
 
 ## Development Notes
 - **Narrative Generation**: LLM creates entire 13-slide story structure at once for coherence

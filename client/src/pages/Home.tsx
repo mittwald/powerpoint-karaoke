@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type KeywordInput as KeywordInputType } from "@shared/schema";
 import KeywordInput from "@/components/KeywordInput";
+import LoadingScreen from "@/components/LoadingScreen";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,22 +29,23 @@ export default function Home() {
       const result = await response.json();
       
       // Navigate to the presentation page with the ID
+      // Component will unmount, so no need to reset isLoading
       setLocation(`/presentation/${result.id}`);
     } catch (error) {
       console.error("Error:", error);
+      setIsLoading(false);
       toast({
         title: "Generation Failed",
         description: "Failed to generate presentation. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-primary">
       <KeywordInput onSubmit={handleKeywordSubmit} isLoading={isLoading} />
+      {isLoading && <LoadingScreen />}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure } from "./lib/openai";
 import { getRandomPhotosByQuery } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
+import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate-presentation", async (req, res) => {
@@ -89,7 +90,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: "Thank You!",
       });
 
+      // Save presentation to database
+      const savedPresentation = await storage.createPresentation({
+        title,
+        keywords,
+        presenterName,
+        difficulty,
+        language,
+        slides,
+      });
+
       res.json({
+        id: savedPresentation.id,
         title,
         keywords,
         slides,
@@ -97,6 +109,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating presentation:", error);
       res.status(500).json({ error: "Failed to generate presentation" });
+    }
+  });
+
+  // Get presentation by ID
+  app.get("/api/presentations/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const presentation = await storage.getPresentation(id);
+
+      if (!presentation) {
+        return res.status(404).json({ error: "Presentation not found" });
+      }
+
+      res.json({
+        id: presentation.id,
+        title: presentation.title,
+        keywords: presentation.keywords,
+        slides: presentation.slides,
+      });
+    } catch (error) {
+      console.error("Error retrieving presentation:", error);
+      res.status(500).json({ error: "Failed to retrieve presentation" });
     }
   });
 

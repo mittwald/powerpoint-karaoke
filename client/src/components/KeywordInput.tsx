@@ -203,7 +203,7 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
           className="hover-elevate active-elevate-2 px-2 py-1 rounded transition-colors hover:text-primary-foreground/80"
           data-testid="link-impressum"
         >
-          Impressum
+          Legal
         </a>
         <span className="text-primary-foreground/40">•</span>
         <a 

@@ -15,9 +15,6 @@ COPY . .
 # Build the application (frontend + backend)
 RUN npm run build
 
-# Verify build output exists
-RUN ls -la dist/ && ls -la client/dist/ || (echo "Build failed - missing output" && exit 1)
-
 # Production stage
 FROM node:20-alpine
 
@@ -29,7 +26,6 @@ COPY package*.json ./
 # Copy built artifacts from builder stage BEFORE installing deps
 # This ensures we have exactly what was built
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/dist ./client/dist
 
 # Install only production dependencies
 # This comes after copying build artifacts to ensure deps match the build

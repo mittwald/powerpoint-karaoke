@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import fs from "fs";
 import path from "path";
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 
 const app = express();
 
@@ -78,6 +81,25 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run database migrations before starting server
+  if (process.env.DATABASE_URL) {
+    try {
+      log('Running database migrations...');
+      const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
+      const migrationDb = drizzle(migrationClient);
+      
+      await migrate(migrationDb, { migrationsFolder: './migrations' });
+      await migrationClient.end();
+      
+      log('✅ Database migrations completed');
+    } catch (error) {
+      console.error('❌ Migration failed:', error);
+      process.exit(1);
+    }
+  } else {
+    log('⚠️  DATABASE_URL not set, skipping migrations');
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

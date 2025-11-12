@@ -27,6 +27,9 @@ COPY package*.json ./
 # This ensures we have exactly what was built
 COPY --from=builder /app/dist ./dist
 
+# Copy database migrations (needed for runtime migration execution)
+COPY --from=builder /app/migrations ./migrations
+
 # Install only production dependencies
 # This comes after copying build artifacts to ensure deps match the build
 RUN npm ci --omit=dev && \

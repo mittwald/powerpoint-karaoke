@@ -20,7 +20,7 @@ A web application that generates humorous PowerPoint karaoke presentations from 
 ## Tech Stack
 - **Frontend**: React, TypeScript, Tailwind CSS, Shadcn UI, Wouter (routing), TanStack Query
 - **Backend**: Express.js, Node.js, Drizzle ORM
-- **Database**: PostgreSQL (Neon)
+- **Database**: PostgreSQL (standard client - compatible with any PostgreSQL database)
 - **APIs**: OpenAI (gpt-oss-120b via mittwald AI hosting), Unsplash
 
 ## Architecture
@@ -66,7 +66,7 @@ server/
   lib/
     openai.ts - OpenAI integration for narrative generation
     unsplash.ts - Unsplash photo fetching with duplicate prevention
-  db.ts - Database connection (Drizzle + Neon)
+  db.ts - Database connection (Drizzle + postgres)
   storage.ts - Database operations (create/get presentations)
   routes.ts - API endpoints
 shared/

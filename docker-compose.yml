@@ -23,7 +23,7 @@ services:
       - powerpoint-network
 
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     environment:
       - POSTGRES_USER=powerpoint
       - POSTGRES_PASSWORD=powerpoint
@@ -33,7 +33,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U powerpoint"]
+      test: ["CMD-SHELL", "pg_isready -U powerpoint_karaoke"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -83,18 +83,27 @@ app.use((req, res, next) => {
 (async () => {
   // Run database migrations before starting server
   if (process.env.DATABASE_URL) {
+    const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
     try {
       log('Running database migrations...');
-      const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
-      const migrationDb = drizzle(migrationClient);
       
-      await migrate(migrationDb, { migrationsFolder: './migrations' });
-      await migrationClient.end();
+      // Use absolute path from process.cwd() for production compatibility
+      const migrationsPath = path.join(process.cwd(), 'migrations');
+      
+      // Verify migrations folder exists
+      if (!fs.existsSync(migrationsPath)) {
+        throw new Error(`Migrations folder not found at ${migrationsPath}`);
+      }
+      
+      const migrationDb = drizzle(migrationClient);
+      await migrate(migrationDb, { migrationsFolder: migrationsPath });
       
       log('✅ Database migrations completed');
     } catch (error) {
       console.error('❌ Migration failed:', error);
       process.exit(1);
+    } finally {
+      await migrationClient.end();
     }
   } else {
     log('⚠️  DATABASE_URL not set, skipping migrations');

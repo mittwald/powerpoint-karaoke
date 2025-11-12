@@ -104,4 +104,20 @@ shared/
 - **Dark Mode Aesthetic**: All content slides use black backgrounds with white text
 - **mittwald Branding**: Logo appears on all content slides (top-right corner)
 - **Duplicate Prevention**: Photo IDs tracked to ensure unique images across presentation
-- **Database Migrations**: Use `npm run db:push` to sync schema changes
+- **Database Migrations**: 
+  - Development: Use `npm run db:push` to sync schema changes
+  - Production: SQL migrations in `/migrations` folder run automatically at startup
+  - Migrations are idempotent and tracked in `drizzle.__drizzle_migrations` table
+
+## Production Deployment
+- **Database**: Connects to standard PostgreSQL on port 5432 (not Neon WebSocket)
+- **Migrations**: Automatically run when container starts (fail-fast if errors occur)
+- **Docker Build**: `docker build -t powerpoint-karaoke .`
+- **Docker Run**: Requires DATABASE_URL pointing to PostgreSQL database
+  ```bash
+  docker run -p 5000:5000 \
+    -e DATABASE_URL=postgresql://user:pass@host:5432/db \
+    -e OPENAI_API_KEY=xxx \
+    -e UNSPLASH_ACCESS_KEY=xxx \
+    powerpoint-karaoke
+  ```

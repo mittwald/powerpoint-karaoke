@@ -62,6 +62,10 @@ jobs:
         uses: mittwald/deploy-container-action@v1
         env:
           IMAGE_TAG: ${{ needs.build-and-publish.outputs.docker-tag }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
         with:
           api_token: ${{ secrets.MITTWALD_API_TOKEN }}
           stack_id: ${{ secrets.MITTWALD_STACK_ID }}

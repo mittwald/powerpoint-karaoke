@@ -5,21 +5,21 @@ services:
     ports:
       - "3000:3000"
     envs:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://powerpoint:{{ .Env.POSTGRES_PASSWORD }}@db:5432/powerpoint_karaoke
-      - OPENAI_API_KEY={{ .Env.OPENAI_API_KEY }}
-      - OPENAI_API_BASE_URL=https://llm.aihosting.mittwald.de/v1
-      - OPENAI_MODEL=gpt-oss-120b
-      - UNSPLASH_ACCESS_KEY={{ .Env.UNSPLASH_ACCESS_KEY }}
-      - SESSION_SECRET={{ .Env.SESSION_SECRET }}
+      NODE_ENV: production
+      DATABASE_URL: postgresql://powerpoint:{{ .Env.POSTGRES_PASSWORD }}@db:5432/powerpoint_karaoke
+      OPENAI_API_KEY: {{ .Env.OPENAI_API_KEY }}
+      OPENAI_API_BASE_URL: https://llm.aihosting.mittwald.de/v1
+      OPENAI_MODEL: gpt-oss-120b
+      UNSPLASH_ACCESS_KEY: {{ .Env.UNSPLASH_ACCESS_KEY }}
+      SESSION_SECRET: {{ .Env.SESSION_SECRET }}
 
   db:
     description: PostgreSQL Database
     image: postgres:18-alpine
     envs:
-      - POSTGRES_USER=powerpoint
-      - POSTGRES_PASSWORD={{ .Env.POSTGRES_PASSWORD }}
-      - POSTGRES_DB=powerpoint_karaoke
+      POSTGRES_USER: powerpoint
+      POSTGRES_PASSWORD: {{ .Env.POSTGRES_PASSWORD }}
+      POSTGRES_DB: powerpoint_karaoke
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:

@@ -4,7 +4,7 @@ services:
     image: "{{ .Env.IMAGE_TAG }}"
     ports:
       - "3000:3000"
-    environment:
+    envs:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://powerpoint:{{ .Env.POSTGRES_PASSWORD }}@db:5432/powerpoint_karaoke
       - OPENAI_API_KEY={{ .Env.OPENAI_API_KEY }}
@@ -16,7 +16,7 @@ services:
   db:
     description: PostgreSQL Database
     image: postgres:18-alpine
-    environment:
+    envs:
       - POSTGRES_USER=powerpoint
       - POSTGRES_PASSWORD={{ .Env.POSTGRES_PASSWORD }}
       - POSTGRES_DB=powerpoint_karaoke

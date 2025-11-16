@@ -9,6 +9,9 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
 
+    outputs:
+      docker-tag: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -50,12 +53,12 @@ jobs:
 
     needs:
       - build-and-publish
-    
+
     steps:
       - name: Deploy to mStudio
         uses: mittwald/deploy-container-action@v1
         env:
-          IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          IMAGE_TAG: ${{ needs.build-and-publish.outputs.docker-tag }}
         with:
           api_token: ${{ secrets.MITTWALD_API_TOKEN }}
           stack_id: ${{ secrets.MITTWALD_STACK_ID }}

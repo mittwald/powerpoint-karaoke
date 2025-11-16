@@ -1,6 +1,7 @@
 services:
   app:
-    image: "mittwald/powerpoint-karaoke/{{ .Env.IMAGE_TAG }}"
+    description: PowerPoint Karaoke
+    image: "{{ .Env.IMAGE_TAG }}"
     ports:
       - "3000:3000"
     environment:
@@ -13,6 +14,7 @@ services:
       - SESSION_SECRET={{ .Env.SESSION_SECRET }}
 
   db:
+    description: PostgreSQL Database
     image: postgres:18-alpine
     environment:
       - POSTGRES_USER=powerpoint

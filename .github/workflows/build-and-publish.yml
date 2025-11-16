@@ -55,6 +55,9 @@ jobs:
       - build-and-publish
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Deploy to mStudio
         uses: mittwald/deploy-container-action@v1
         env:

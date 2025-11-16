@@ -42,3 +42,21 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: production
+
+    needs:
+      - build-and-publish
+    
+    steps:
+      - name: Deploy to mStudio
+        uses: mittwald/deploy-container-action@v1
+        env:
+          IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+        with:
+          api_token: ${{ secrets.MITTWALD_API_TOKEN }}
+          stack_id: ${{ secrets.MITTWALD_STACK_ID }}
+          stack_file: "${{ github.workspace }}/mittwald-stack.yml"

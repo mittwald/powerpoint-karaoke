@@ -37,7 +37,7 @@ export default function LoadingScreen() {
 
   return (
     <div 
-      className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 dark:to-primary/10"
+      className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-primary/90 to-primary/70 backdrop-blur"
       data-testid="loading-screen"
     >
       <div className="max-w-2xl px-8 text-center space-y-8">
@@ -45,12 +45,12 @@ export default function LoadingScreen() {
         <div className="flex justify-center">
           <div className="relative w-32 h-32">
             {/* Outer rotating ring */}
-            <div className="absolute inset-0 rounded-full border-4 border-primary/20 dark:border-primary/30 animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-background/20 dark:border-primary/30 animate-spin" />
             
             {/* Inner pulsing circle */}
             <div className="flex items-center justify-center w-full h-full">
               <Loader2 
-                className="text-primary animate-spin w-16 h-16" 
+                className="text-background animate-spin w-16 h-16"
                 strokeWidth={2.5}
               />
             </div>
@@ -59,17 +59,17 @@ export default function LoadingScreen() {
 
         {/* Main Title */}
         <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-foreground">
+          <h1 className="text-4xl font-bold text-background">
             Generating Your Masterpiece
           </h1>
-          <div className="h-1 w-32 mx-auto bg-primary rounded-full" />
+          <div className="h-1 w-32 mx-auto bg-background rounded-full" />
         </div>
 
         {/* Rotating Messages */}
         <div className="min-h-[80px] flex items-center justify-center">
           <p 
             key={messageIndex}
-            className="text-lg text-muted-foreground animate-in fade-in-0 slide-in-from-bottom-2 duration-500"
+            className="text-lg text-background animate-in fade-in-0 slide-in-from-bottom-2 duration-500"
             data-testid="loading-message"
           >
             {LOADING_MESSAGES[messageIndex]}
@@ -79,12 +79,12 @@ export default function LoadingScreen() {
         {/* Progress Indicator */}
         <div className="space-y-3">
           <div className="flex justify-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse [animation-delay:0s] [animation-duration:1.5s]" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse [animation-delay:0.15s] [animation-duration:1.5s]" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse [animation-delay:0.3s] [animation-duration:1.5s]" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse [animation-delay:0.45s] [animation-duration:1.5s]" />
+            <div className="h-2 w-2 rounded-full bg-background animate-pulse [animation-delay:0s] [animation-duration:1.5s]" />
+            <div className="h-2 w-2 rounded-full bg-background animate-pulse [animation-delay:0.15s] [animation-duration:1.5s]" />
+            <div className="h-2 w-2 rounded-full bg-background animate-pulse [animation-delay:0.3s] [animation-duration:1.5s]" />
+            <div className="h-2 w-2 rounded-full bg-background animate-pulse [animation-delay:0.45s] [animation-duration:1.5s]" />
           </div>
-          <p className="text-sm text-muted-foreground/70">
+          <p className="text-sm text-background/70">
             This may take a few moments...
           </p>
         </div>

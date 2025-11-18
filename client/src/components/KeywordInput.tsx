@@ -193,6 +193,16 @@ export default function KeywordInput({ onSubmit, isLoading }: KeywordInputProps)
         >
           Built with <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500 mx-0.5" /> and mittwald AI hosting
         </a>
+          <span className="text-primary-foreground/40">•</span>
+          <a
+              href="https://unsplash.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover-elevate active-elevate-2 px-3 py-1.5 rounded-md transition-colors text-primary-foreground/90 hover:text-primary-foreground"
+              data-testid="link-unsplash-footer"
+          >
+              Images by Unsplash
+          </a>
       </div>
       
       <div className="flex items-center justify-center gap-4 text-xs text-primary-foreground/60">

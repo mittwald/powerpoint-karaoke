@@ -192,7 +192,7 @@ For "photo" slides:
 - "photoSearchTerm": a 1-3 word search term for Unsplash (e.g., "mountain sunset", "office meeting", "cat sleeping")
 
 For "text" slides:
-- "text": a short, punchy statement (max 15 words)
+- "text": a short, punchy statement (max 10 words)
 
 For "quote" slides:
 - "quote": the fake expert quote (1-2 sentences)
@@ -202,6 +202,8 @@ For "quote" slides:
 For "graph" slides:
 - "graphTitle": the graph title (max 50 chars)
 - "graphData": array of 5-7 objects with "label" (string) and "value" (number between 10-100)
+
+Use a maximum of 1 quote slide and 1 graph slide in the entire presentation. The rest should be a mix of photo and text slides.
 
 Important: Create a narrative arc across all 13 slides that tells a story, even if absurd.`,
         },

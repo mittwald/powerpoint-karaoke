@@ -143,10 +143,12 @@ interface SlideSpec {
 export async function generatePresentationStructure(
   keywords: string[], 
   difficulty: string,
-  language: string
+  language: string,
+  slideCount: number = 15
 ): Promise<SlideSpec[]> {
   try {
     const openai = getOpenAIClient();
+    const dynamicSlideCount = slideCount - 3; // Reserve 3 slides for title, bio and thank you
     
     const languageInstructions = {
       english: "Generate all text content in English.",
@@ -185,7 +187,7 @@ ${languageInstructions[language as keyof typeof languageInstructions]}
 
 ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]}
 
-Return a JSON object with a "slides" array containing exactly 13 slide objects. Each slide must have:
+Return a JSON object with a "slides" array containing exactly ${dynamicSlideCount} slide objects. Each slide must have:
 - "type": one of "photo", "text", "quote", or "graph"
 
 For "photo" slides:
@@ -205,11 +207,11 @@ For "graph" slides:
 
 Use a maximum of 1 quote slide and 1 graph slide in the entire presentation. The rest should be a mix of photo and text slides.
 
-Important: Create a narrative arc across all 13 slides that tells a story, even if absurd.`,
+Important: Create a narrative arc across all ${dynamicSlideCount} slides that tells a story, even if absurd.`,
         },
         {
           role: "user",
-          content: `Create a 13-slide presentation structure about: ${keywords.join(", ")}`,
+          content: `Create a ${dynamicSlideCount}-slide presentation structure about: ${keywords.join(", ")}`,
         },
       ],
       response_format: { type: "json_object" },

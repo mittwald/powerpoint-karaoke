@@ -8,6 +8,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Heart, Sparkles} from "lucide-react";
 import mittwaldLogo from "@assets/mittwald_logo.svg";
+import t3conLogo from "@assets/t3con.png";
 
 interface KeywordInputProps {
     onSubmit: (data: KeywordInput) => void;
@@ -30,12 +31,19 @@ export default function KeywordInput({onSubmit, isLoading}: KeywordInputProps) {
 
     return (
         <div className="w-full max-w-2xl space-y-6">
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-8 text-6xl">
                 <img
                     src={mittwaldLogo}
                     alt="mittwald"
                     className="h-12"
                     data-testid="img-mittwald-logo"
+                />
+                <span className="text-primary-foreground/40 mx-8">|</span>
+                <img
+                    src={t3conLogo}
+                    alt="mittwald"
+                    className="h-12"
+                    data-testid="img-t3con-logo"
                 />
             </div>
 

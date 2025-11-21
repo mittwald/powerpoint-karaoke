@@ -21,9 +21,6 @@ export default function GraphSlide({ content, graphTitle, graphData }: GraphSlid
       </div>
 
       <div className="max-w-5xl w-full space-y-8">
-        <h2 className="text-4xl md:text-5xl font-bold text-white text-center">
-          {graphTitle || content}
-        </h2>
         <div className="bg-white/5 p-8 rounded-lg border border-white/10 backdrop-blur-sm">
           <div className="flex justify-between gap-4">
             {graphData.map((dataPoint, index) => (

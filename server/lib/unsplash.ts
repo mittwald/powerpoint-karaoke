@@ -66,14 +66,15 @@ export async function getRandomPhotosByQuery(query: string, excludeIds: string[]
         console.log(`Duplicate photo detected (${photo.id}), retrying... (attempt ${attempt + 1}/${maxRetries})`);
         continue; // Try again
       }
-      
+
+      const trackingParams = `?utm_source=${encodeURIComponent('PowerPoint Karaoke')}&utm_medium=referral`;
       return {
         id: photo.id,
         url: photo.urls.regular,
         authorName: photo.user.name,
         authorUsername: photo.user.username,
-        authorUrl: photo.user.links.html,
-        photoUrl: photo.links.html,
+        authorUrl: photo.user.links.html + trackingParams,
+        photoUrl: photo.links.html + trackingParams,
       };
     } catch (error) {
       console.error("Error fetching photo from Unsplash API:", error);

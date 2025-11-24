@@ -25,7 +25,7 @@ export default function KeywordInput({onSubmit, isLoading}: KeywordInputProps) {
             presenterName: "",
             difficulty: "medium",
             language: "english",
-            slideCount: 15,
+            slideCount: "15",
         },
     });
 
@@ -187,7 +187,7 @@ export default function KeywordInput({onSubmit, isLoading}: KeywordInputProps) {
                                                     <Input
                                                         data-testid="input-slidecount"
                                                         defaultValue={field.value}
-                                                        type="number"
+                                                        type="string"
                                                         {...field}
                                                     />
                                                 </FormControl>

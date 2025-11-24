@@ -37,6 +37,7 @@ RUN npm ci --omit=dev && \
 
 # Copy runtime assets
 COPY --from=builder /app/attached_assets ./attached_assets
+COPY --from=builder /app/fallback-photos.json ./fallback-photos.json
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \

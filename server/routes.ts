@@ -1,11 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure } from "./lib/openai";
-import { getRandomPhotosByQuery } from "./lib/unsplash";
+import {getRandomPhotosByQuery, PhotoWithAttribution} from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 import { storage } from "./storage";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, fallbackPhotos: PhotoWithAttribution[]): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
@@ -59,7 +59,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const spec of slideSpecs) {
         if (spec.type === "photo" && spec.photoSearchTerm) {
           // Fetch photo using the search term from the LLM
-          const photo = await getRandomPhotosByQuery(spec.photoSearchTerm, usedPhotoIds);
+          const photo = await getRandomPhotosByQuery(spec.photoSearchTerm, usedPhotoIds, 5, fallbackPhotos);
           usedPhotoIds.push(photo.id);
           
           slides.push({

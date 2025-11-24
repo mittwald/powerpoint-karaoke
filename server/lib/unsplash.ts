@@ -1,3 +1,5 @@
+import {readFile} from "node:fs/promises";
+
 interface UnsplashPhoto {
   id: string;
   urls: {
@@ -29,7 +31,7 @@ export interface PhotoWithAttribution {
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 const UNSPLASH_API_URL = 'https://api.unsplash.com';
 
-export async function getRandomPhotosByQuery(query: string, excludeIds: string[] = [], maxRetries: number = 5): Promise<PhotoWithAttribution> {
+export async function getRandomPhotosByQuery(query: string, excludeIds: string[] = [], maxRetries: number = 5, fallbackPhotos: PhotoWithAttribution[]): Promise<PhotoWithAttribution> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       if (!UNSPLASH_ACCESS_KEY) {
@@ -76,15 +78,8 @@ export async function getRandomPhotosByQuery(query: string, excludeIds: string[]
     } catch (error) {
       console.error("Error fetching photo from Unsplash API:", error);
       if (attempt === maxRetries - 1) {
-        // Last attempt, return fallback
-        return {
-          id: `fallback-${Date.now()}-${Math.random()}`,
-          url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop",
-          authorName: "Unsplash",
-          authorUsername: "unsplash",
-          authorUrl: "https://unsplash.com/@unsplash",
-          photoUrl: "https://unsplash.com/photos/mountain-range",
-        };
+        const randomFallback = fallbackPhotos[Math.floor(Math.random() * fallbackPhotos.length)];
+        return randomFallback;
       }
     }
   }

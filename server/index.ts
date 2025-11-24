@@ -5,6 +5,7 @@ import path from "path";
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import {readFile} from "node:fs/promises";
 
 const app = express();
 
@@ -109,7 +110,10 @@ app.use((req, res, next) => {
     log('⚠️  DATABASE_URL not set, skipping migrations');
   }
 
-  const server = await registerRoutes(app);
+  const fallbacks = JSON.parse(await readFile("./fallback-photos.json", "utf-8"));
+  log(`Loaded ${fallbacks.length} fallback photos from JSON`);
+
+  const server = await registerRoutes(app, fallbacks);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

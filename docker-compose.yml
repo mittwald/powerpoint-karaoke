@@ -13,6 +13,8 @@ services:
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-oss-120b}
       - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY}
       - SESSION_SECRET=${SESSION_SECRET:-change-this-secret-in-production}
+    env_file:
+      - ./.env
     depends_on:
       db:
         condition: service_healthy

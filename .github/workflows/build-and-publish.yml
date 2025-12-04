@@ -48,7 +48,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: production
+      url: https://ppt-karaoke.mittwald.fun
     concurrency: production
 
     needs:

@@ -232,3 +232,95 @@ Important: Create a narrative arc across all ${dynamicSlideCount} slides that te
     return [];
   }
 }
+
+export async function moderateUserInput(
+  keywords: string[],
+  presenterName: string
+): Promise<{ allowed: boolean; reason?: string }> {
+  try {
+    const openai = getOpenAIClient();
+
+    const systemPrompt = `You are a content moderation system for a presentation generation application. Your role is to evaluate whether user-provided keywords and presenter names are appropriate for generating public presentations.
+
+BLOCK content that contains:
+1. Offensive or vulgar language (profanity, slurs, crude terms)
+2. Sexual or pornographic content (explicit terms, sexual acts, adult content)
+3. Hate speech or discriminatory language:
+   - Racism, racial slurs, ethnic discrimination
+   - Sexism, misogyny, gender-based discrimination
+   - Homophobia, transphobia, LGBTQ+ discrimination
+   - Religious discrimination or slurs
+   - Ableism or disability-based discrimination
+4. Violence or threats (graphic violence, threats of harm, weapons used threateningly)
+5. Harassment or targeted abuse (personal attacks, doxxing, stalking)
+6. Illegal activities (drugs, fraud, hacking, etc.)
+
+ALLOW content that is:
+1. Professional or educational in nature
+2. Discussing sensitive topics respectfully (e.g., "diversity training", "cancer awareness")
+3. Humorous or satirical without being hateful
+4. Using industry-specific terminology that might be misunderstood out of context
+5. Historical or academic references to sensitive topics
+
+CONTEXT: This is for a PowerPoint Karaoke app that generates humorous presentations. Users may input silly or absurd keywords, which is expected and fine. Only block truly inappropriate or harmful content.
+
+LANGUAGE: Input may be in English or German. Apply moderation standards to both languages.
+
+OUTPUT FORMAT:
+Return a JSON object with:
+- "allowed": true if content is appropriate, false if it should be blocked
+- "reason": if blocked, provide a brief category (e.g., "offensive language", "hate speech", "sexual content"). If allowed, use empty string.
+
+When evaluating borderline cases, consider:
+- Intent: Is this educational, professional, or malicious?
+- Context: Would this be acceptable in a public presentation?
+- Harm potential: Could this cause real harm or distress?
+
+Be strict but fair. If genuinely uncertain, block the content.`;
+
+    const userPrompt = `Please moderate this user input:
+
+Keywords: ${keywords.join(", ")}
+Presenter Name: ${presenterName}
+
+Is this input appropriate for generating a public presentation?`;
+
+    const response = await openai.chat.completions.create({
+      model: getModel(),
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: userPrompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1, // Low temperature for consistent moderation
+    });
+
+    const content = response.choices[0].message.content?.trim();
+    if (content) {
+      const parsed = JSON.parse(content);
+      return {
+        allowed: parsed.allowed === true,
+        reason: parsed.reason || undefined,
+      };
+    }
+
+    // If parsing fails, fail-closed (block)
+    return {
+      allowed: false,
+      reason: "Moderation check failed",
+    };
+  } catch (error) {
+    console.error("Error in content moderation:", error);
+    // FAIL-CLOSED: If moderation fails, block the request
+    return {
+      allowed: false,
+      reason: "Moderation service unavailable",
+    };
+  }
+}

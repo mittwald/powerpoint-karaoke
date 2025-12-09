@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure } from "./lib/openai";
+import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure, moderateUserInput } from "./lib/openai";
 import {getRandomPhotosByQuery, PhotoWithAttribution} from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 import { storage } from "./storage";
@@ -21,6 +21,20 @@ export async function registerRoutes(app: Express, fallbackPhotos: PhotoWithAttr
 
       const { keyword1, keyword2, keyword3, presenterName, difficulty, language, slideCount } = validation.data;
       const keywords = [keyword1, keyword2, keyword3].filter((k): k is string => !!k && k.trim() !== "");
+
+      // Content moderation check
+      const moderationResult = await moderateUserInput(keywords, presenterName);
+
+      if (!moderationResult.allowed) {
+        console.warn("Content moderation blocked request:", {
+          keywords,
+          presenterName,
+          reason: moderationResult.reason,
+        });
+        return res.status(400).json({
+          error: "Input contains inappropriate content. Please revise your keywords and presenter name.",
+        });
+      }
 
       // Generate presentation title using OpenAI
       const title = await generatePresentationTitle(keywords, difficulty, language);

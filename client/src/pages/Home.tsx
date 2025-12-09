@@ -23,11 +23,12 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate presentation");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate presentation");
       }
 
       const result = await response.json();
-      
+
       // Navigate to the presentation page with the ID
       // Component will unmount, so no need to reset isLoading
       setLocation(`/presentation/${result.id}`);
@@ -36,7 +37,7 @@ export default function Home() {
       setIsLoading(false);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate presentation. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate presentation. Please try again.",
         variant: "destructive",
       });
     }

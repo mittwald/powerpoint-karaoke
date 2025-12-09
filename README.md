@@ -1,5 +1,7 @@
 # PowerPoint Karaoke Generator
 
+![](./docs/demo.png)
+
 An AI-powered web application that generates hilariously random PowerPoint presentations from just three keywords. Perfect for party games, team building, and testing your improvisation skills!
 
 > [!NOTE]
@@ -14,10 +16,6 @@ An AI-powered web application that generates hilariously random PowerPoint prese
 - **Persistent Presentations**: All presentations are stored persistently in a PostgreSQL database
 - **Shareable Links**: Every presentation gets a unique URL that can be shared with anyone
 - **Full-Screen Presentation Mode**: Navigate with mouse or keyboard (arrow keys, space, escape)
-
-## Demo
-
-[Insert screenshot or GIF of the application here]
 
 ## Quick Start
 

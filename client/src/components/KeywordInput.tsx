@@ -186,7 +186,6 @@ export default function KeywordInput({onSubmit, isLoading}: KeywordInputProps) {
                                                 <FormControl>
                                                     <Input
                                                         data-testid="input-slidecount"
-                                                        defaultValue={field.value}
                                                         type="string"
                                                         {...field}
                                                     />

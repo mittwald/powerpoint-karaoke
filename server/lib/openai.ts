@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { observeOpenAI } from "@langfuse/openai";
 
 const DEFAULT_MODEL = "gpt-oss-120b";
 
@@ -6,7 +7,7 @@ function getOpenAIClient(): OpenAI {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY environment variable is not set");
   }
-  
+
   const config: {
     apiKey: string;
     baseURL?: string;
@@ -14,30 +15,35 @@ function getOpenAIClient(): OpenAI {
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: "https://llm.aihosting.mittwald.de/v1",
   };
-  
+
   if (process.env.OPENAI_API_BASE_URL) {
     config.baseURL = process.env.OPENAI_API_BASE_URL;
   }
-  
-  return new OpenAI(config);
+
+  return observeOpenAI(new OpenAI(config));
 }
 
 function getModel(): string {
   return process.env.OPENAI_MODEL || DEFAULT_MODEL;
 }
 
-export async function generatePresentationTitle(keywords: string[], difficulty: string, language: string): Promise<string> {
+export async function generatePresentationTitle(
+  keywords: string[],
+  difficulty: string,
+  language: string,
+): Promise<string> {
   try {
     const openai = getOpenAIClient();
-    
+
     const languageInstructions = {
       english: "Generate the title in English.",
       german: "Generate the title in German (Deutsch).",
     };
-    
+
     const difficultyInstructions = {
       easy: "Create a professional-sounding presentation title.",
-      medium: "Create a humorous, slightly absurd but still professional-sounding and believable presentation title.",
+      medium:
+        "Create a humorous, slightly absurd but still professional-sounding and believable presentation title.",
       hard: "Create a completely ridiculous, over-the-top presentation title that sounds hilariously absurd.",
     };
 
@@ -55,25 +61,33 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
       ],
     });
 
-    return response.choices[0].message.content?.trim() || "Untitled Presentation";
+    return (
+      response.choices[0].message.content?.trim() || "Untitled Presentation"
+    );
   } catch (error) {
     console.error("Error generating title:", error);
     throw new Error("Failed to generate presentation title");
   }
 }
 
-export async function generatePresenterBio(presenterName: string, keywords: string[], difficulty: string, language: string): Promise<{ bio: string; facts: string[] }> {
+export async function generatePresenterBio(
+  presenterName: string,
+  keywords: string[],
+  difficulty: string,
+  language: string,
+): Promise<{ bio: string; facts: string[] }> {
   try {
     const openai = getOpenAIClient();
-    
+
     const languageInstructions = {
       english: "Generate all content in English.",
       german: "Generate all content in German (Deutsch).",
     };
-    
+
     const difficultyInstructions = {
       easy: "Create a professional sounding fictional bio with one or two unusual credentials. Add 2 fun facts that are slightly quirky.",
-      medium: "Create a moderately absurd, but still professional sounding fictional bio with several ridiculous but creative credentials. Add 3 fun facts that are slightly absurd and humorous.",
+      medium:
+        "Create a moderately absurd, but still professional sounding fictional bio with several ridiculous but creative credentials. Add 3 fun facts that are slightly absurd and humorous.",
       hard: "Create a completely over-the-top, hilariously absurd fictional bio with outrageous credentials and achievements. Add 3 fun facts that are wildly absurd and ridiculous.",
     };
 
@@ -101,21 +115,24 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
     const content = response.choices[0].message.content?.trim();
     if (content) {
       const parsed = JSON.parse(content);
-      
+
       // Enforce length limits with truncation and type safety
       const rawBio = parsed.bio;
-      const bio = String(rawBio || `${presenterName}, Expert`).substring(0, 200);
-      
+      const bio = String(rawBio || `${presenterName}, Expert`).substring(
+        0,
+        200,
+      );
+
       const rawFacts = parsed.facts;
       const facts = Array.isArray(rawFacts)
         ? rawFacts
             .slice(0, 3)
             .map((fact: unknown) => String(fact).substring(0, 120))
         : [];
-      
+
       return { bio, facts };
     }
-    
+
     return {
       bio: `${presenterName}, Expert`,
       facts: [],
@@ -141,22 +158,23 @@ interface SlideSpec {
 }
 
 export async function generatePresentationStructure(
-  keywords: string[], 
+  keywords: string[],
   difficulty: string,
   language: string,
-  slideCount: number = 15
+  slideCount: number = 15,
 ): Promise<SlideSpec[]> {
   try {
     const openai = getOpenAIClient();
     const dynamicSlideCount = slideCount - 3; // Reserve 3 slides for title, bio and thank you
-    
+
     const languageInstructions = {
       english: "Generate all text content in English.",
-      german: "Generate all text content in German (Deutsch). Use proper German grammar and vocabulary.",
+      german:
+        "Generate all text content in German (Deutsch). Use proper German grammar and vocabulary.",
     };
-    
+
     const difficultyInstructions = {
-      easy: `Create a coherent, professional presentation structure that follows a logical narrative. 
+      easy: `Create a coherent, professional presentation structure that follows a logical narrative.
              - Photo search terms should be relevant to the topic
              - Text slides should have clear, professional statements
              - Quotes should be slightly amusing but believable
@@ -224,7 +242,7 @@ Important: Create a narrative arc across all ${dynamicSlideCount} slides that te
         return parsed.slides;
       }
     }
-    
+
     // Fallback structure
     return [];
   } catch (error) {
@@ -235,7 +253,7 @@ Important: Create a narrative arc across all ${dynamicSlideCount} slides that te
 
 export async function moderateUserInput(
   keywords: string[],
-  presenterName: string
+  presenterName: string,
 ): Promise<{ allowed: boolean; reason?: string }> {
   try {
     const openai = getOpenAIClient();

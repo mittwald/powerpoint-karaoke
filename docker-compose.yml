@@ -1,3 +1,6 @@
+include:
+  - docker-compose.langfuse.yml
+
 services:
   app:
     build:

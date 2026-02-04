@@ -31,14 +31,12 @@ export interface PhotoWithAttribution {
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 const UNSPLASH_API_URL = "https://api.unsplash.com";
 
-const observedFetch = observe(fetch);
-
 async function fetchPhotos(query: string) {
   const uri = `${UNSPLASH_API_URL}/photos/random?query=${encodeURIComponent(query)}&orientation=landscape`;
   const observation = startObservation("fetch", { metadata: { uri } });
 
   try {
-    const response = await observedFetch(uri, {
+    const response = await fetch(uri, {
       headers: {
         Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
       },

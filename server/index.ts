@@ -7,11 +7,11 @@ import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { readFile } from "node:fs/promises";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
 import { LangfuseSpanProcessor } from "@langfuse/otel";
+import { LangfuseClient } from "@langfuse/client";
+import { setupPromptsIfNotExistent } from "./lib/prompts";
 
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
-
+const langfuse = new LangfuseClient();
 const app = express();
 const otel = new NodeSDK({
   spanProcessors: [
@@ -126,12 +126,16 @@ app.use((req, res, next) => {
     log("⚠️  DATABASE_URL not set, skipping migrations");
   }
 
+  log("Setting up prompt templates in Langfuse...");
+  await setupPromptsIfNotExistent(langfuse);
+  log("✅ Prompts set up");
+
   const fallbacks = JSON.parse(
     await readFile("./fallback-photos.json", "utf-8"),
   );
   log(`Loaded ${fallbacks.length} fallback photos from JSON`);
 
-  const server = await registerRoutes(app, fallbacks);
+  const server = await registerRoutes(app, fallbacks, langfuse);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -156,6 +160,8 @@ app.use((req, res, next) => {
   }
 
   const shutdown = () => {
+    log("starting server shutdown...");
+
     server.close(() => {
       log("closed server");
       otel.shutdown();

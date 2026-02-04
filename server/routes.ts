@@ -10,10 +10,12 @@ import { getRandomPhotosByQuery, PhotoWithAttribution } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 import { storage } from "./storage";
 import { startActiveObservation } from "@langfuse/tracing";
+import { LangfuseClient } from "@langfuse/client";
 
 export async function registerRoutes(
   app: Express,
   fallbackPhotos: PhotoWithAttribution[],
+  langfuse: LangfuseClient,
 ): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
@@ -26,9 +28,7 @@ export async function registerRoutes(
         const validation = keywordInputSchema.safeParse(req.body);
 
         span.update({
-          metadata: {
-            "generation-input": validation,
-          },
+          input: validation,
         });
 
         if (!validation.success) {
@@ -55,6 +55,7 @@ export async function registerRoutes(
             const moderationResult = await moderateUserInput(
               keywords,
               presenterName,
+              langfuse,
             );
 
             if (!moderationResult.allowed) {
@@ -89,6 +90,7 @@ export async function registerRoutes(
               keywords,
               difficulty,
               language,
+              langfuse,
             );
 
             // Generate presenter bio
@@ -97,6 +99,7 @@ export async function registerRoutes(
               keywords,
               difficulty,
               language,
+              langfuse,
             );
 
             // Generate the complete presentation structure using LLM
@@ -105,6 +108,7 @@ export async function registerRoutes(
               difficulty,
               language,
               parseInt(slideCount, 10),
+              langfuse,
             );
 
             return { title, bioData, slideSpecs };

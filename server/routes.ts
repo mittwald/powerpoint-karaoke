@@ -1,139 +1,232 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure, moderateUserInput } from "./lib/openai";
-import {getRandomPhotosByQuery, PhotoWithAttribution} from "./lib/unsplash";
+import {
+  generatePresentationTitle,
+  generatePresenterBio,
+  generatePresentationStructure,
+  moderateUserInput,
+} from "./lib/openai";
+import { getRandomPhotosByQuery, PhotoWithAttribution } from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
 import { storage } from "./storage";
+import { startActiveObservation } from "@langfuse/tracing";
+import { LangfuseClient } from "@langfuse/client";
 
-export async function registerRoutes(app: Express, fallbackPhotos: PhotoWithAttribution[]): Promise<Server> {
+export async function registerRoutes(
+  app: Express,
+  fallbackPhotos: PhotoWithAttribution[],
+  langfuse: LangfuseClient,
+): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
   app.post("/api/generate-presentation", async (req, res) => {
-    try {
-      const validation = keywordInputSchema.safeParse(req.body);
-      
-      if (!validation.success) {
-        return res.status(400).json({ error: "Invalid keywords" });
-      }
+    await startActiveObservation("generate-presentation", async (span) => {
+      try {
+        const validation = keywordInputSchema.safeParse(req.body);
 
-      const { keyword1, keyword2, keyword3, presenterName, difficulty, language, slideCount } = validation.data;
-      const keywords = [keyword1, keyword2, keyword3].filter((k): k is string => !!k && k.trim() !== "");
+        span.update({
+          input: validation,
+        });
 
-      // Content moderation check
-      const moderationResult = await moderateUserInput(keywords, presenterName);
+        if (!validation.success) {
+          return res.status(400).json({ error: "Invalid keywords" });
+        }
 
-      if (!moderationResult.allowed) {
-        console.warn("Content moderation blocked request:", {
-          keywords,
+        const {
+          keyword1,
+          keyword2,
+          keyword3,
           presenterName,
-          reason: moderationResult.reason,
-        });
-        return res.status(400).json({
-          error: "Input contains inappropriate content. Please revise your keywords and presenter name.",
-        });
-      }
-
-      // Generate presentation title using OpenAI
-      const title = await generatePresentationTitle(keywords, difficulty, language);
-
-      // Generate presenter bio
-      const bioData = await generatePresenterBio(presenterName, keywords, difficulty, language);
-
-      // Generate the complete presentation structure using LLM
-      const slideSpecs = await generatePresentationStructure(
-          keywords,
           difficulty,
           language,
-          parseInt(slideCount, 10),
-      );
+          slideCount,
+        } = validation.data;
+        const keywords = [keyword1, keyword2, keyword3].filter(
+          (k): k is string => !!k && k.trim() !== "",
+        );
 
-      // Initialize slides array
-      const slides = [];
-      
-      // First slide: Title
-      slides.push({
-        type: "title",
-        content: title,
-      });
-      
-      // Second slide: Presenter bio
-      slides.push({
-        type: "bio",
-        content: presenterName,
-        bio: bioData.bio,
-        facts: bioData.facts,
-      });
+        const moderationResult = await startActiveObservation(
+          "moderation",
+          async (moderationSpan) => {
+            // Content moderation check
+            const moderationResult = await moderateUserInput(
+              keywords,
+              presenterName,
+              langfuse,
+            );
 
-      // Process each slide spec and create actual slides
-      const usedPhotoIds: string[] = [];
-      
-      for (const spec of slideSpecs) {
-        if (spec.type === "photo" && spec.photoSearchTerm) {
-          // Fetch photo using the search term from the LLM
-          const photo = await getRandomPhotosByQuery(spec.photoSearchTerm, usedPhotoIds, 5, fallbackPhotos);
-          usedPhotoIds.push(photo.id);
-          
-          slides.push({
-            type: "photo",
-            content: spec.photoSearchTerm,
-            imageUrl: photo.url,
-            photoAuthorName: photo.authorName,
-            photoAuthorUsername: photo.authorUsername,
-            photoAuthorUrl: photo.authorUrl,
-            photoUrl: photo.photoUrl,
-          });
-        } else if (spec.type === "text" && spec.text) {
-          slides.push({
-            type: "text",
-            content: spec.text,
-          });
-        } else if (spec.type === "quote" && spec.quote && spec.quoteAuthor && spec.quoteTitle) {
-          slides.push({
-            type: "quote",
-            content: spec.quote,
-            quote: spec.quote,
-            author: spec.quoteAuthor,
-            authorTitle: spec.quoteTitle,
-          });
-        } else if (spec.type === "graph" && spec.graphTitle && spec.graphData) {
-          slides.push({
-            type: "graph",
-            content: spec.graphTitle,
-            graphTitle: spec.graphTitle,
-            graphData: spec.graphData,
+            if (!moderationResult.allowed) {
+              span.updateTrace({
+                tags: ["blocked"],
+              });
+
+              console.warn("Content moderation blocked request:", {
+                keywords,
+                presenterName,
+                reason: moderationResult.reason,
+              });
+            }
+
+            return moderationResult;
+          },
+          { asType: "guardrail" },
+        );
+
+        if (!moderationResult.allowed) {
+          return res.status(400).json({
+            error:
+              "Input contains inappropriate content. Please revise your keywords and presenter name.",
           });
         }
+
+        const { title, bioData, slideSpecs } = await startActiveObservation(
+          "content-plan",
+          async (span) => {
+            // Generate presentation title using OpenAI
+            const title = await generatePresentationTitle(
+              keywords,
+              difficulty,
+              language,
+              langfuse,
+            );
+
+            // Generate presenter bio
+            const bioData = await generatePresenterBio(
+              presenterName,
+              keywords,
+              difficulty,
+              language,
+              langfuse,
+            );
+
+            // Generate the complete presentation structure using LLM
+            const slideSpecs = await generatePresentationStructure(
+              keywords,
+              difficulty,
+              language,
+              parseInt(slideCount, 10),
+              langfuse,
+            );
+
+            return { title, bioData, slideSpecs };
+          },
+        );
+
+        // Initialize slides array
+
+        const slides = await startActiveObservation(
+          "build-slides",
+          async (slidesSpan) => {
+            const slides: any[] = [];
+
+            // First slide: Title
+            slides.push({
+              type: "title",
+              content: title,
+            });
+
+            // Second slide: Presenter bio
+            slides.push({
+              type: "bio",
+              content: presenterName,
+              bio: bioData.bio,
+              facts: bioData.facts,
+            });
+
+            // Process each slide spec and create actual slides
+            const usedPhotoIds: string[] = [];
+
+            for (const spec of slideSpecs) {
+              if (spec.type === "photo" && spec.photoSearchTerm) {
+                // Fetch photo using the search term from the LLM
+                const photo = await getRandomPhotosByQuery(
+                  spec.photoSearchTerm,
+                  usedPhotoIds,
+                  5,
+                  fallbackPhotos,
+                );
+                usedPhotoIds.push(photo.id);
+
+                slides.push({
+                  type: "photo",
+                  content: spec.photoSearchTerm,
+                  imageUrl: photo.url,
+                  photoAuthorName: photo.authorName,
+                  photoAuthorUsername: photo.authorUsername,
+                  photoAuthorUrl: photo.authorUrl,
+                  photoUrl: photo.photoUrl,
+                });
+              } else if (spec.type === "text" && spec.text) {
+                slides.push({
+                  type: "text",
+                  content: spec.text,
+                });
+              } else if (
+                spec.type === "quote" &&
+                spec.quote &&
+                spec.quoteAuthor &&
+                spec.quoteTitle
+              ) {
+                slides.push({
+                  type: "quote",
+                  content: spec.quote,
+                  quote: spec.quote,
+                  author: spec.quoteAuthor,
+                  authorTitle: spec.quoteTitle,
+                });
+              } else if (
+                spec.type === "graph" &&
+                spec.graphTitle &&
+                spec.graphData
+              ) {
+                slides.push({
+                  type: "graph",
+                  content: spec.graphTitle,
+                  graphTitle: spec.graphTitle,
+                  graphData: spec.graphData,
+                });
+              }
+            }
+
+            // Add thank you slide at the end
+            slides.push({
+              type: "text",
+              content: "Thank You!",
+            });
+
+            return slides;
+          },
+        );
+
+        // Save presentation to database
+        const savedPresentation = await startActiveObservation(
+          "persist-presentation",
+          (span) => {
+            return storage.createPresentation({
+              title,
+              keywords,
+              presenterName,
+              difficulty,
+              language,
+              slides,
+            });
+          },
+        );
+
+        res.json({
+          id: savedPresentation.id,
+          title,
+          keywords,
+          slides,
+        });
+      } catch (error) {
+        console.error("Error generating presentation:", error);
+        res.status(500).json({ error: "Failed to generate presentation" });
       }
-
-      // Add thank you slide at the end
-      slides.push({
-        type: "text",
-        content: "Thank You!",
-      });
-
-      // Save presentation to database
-      const savedPresentation = await storage.createPresentation({
-        title,
-        keywords,
-        presenterName,
-        difficulty,
-        language,
-        slides,
-      });
-
-      res.json({
-        id: savedPresentation.id,
-        title,
-        keywords,
-        slides,
-      });
-    } catch (error) {
-      console.error("Error generating presentation:", error);
-      res.status(500).json({ error: "Failed to generate presentation" });
-    }
+    });
   });
 
   // Get presentation by ID

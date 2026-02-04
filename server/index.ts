@@ -2,12 +2,26 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import fs from "fs";
 import path from "path";
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import {readFile} from "node:fs/promises";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { readFile } from "node:fs/promises";
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { LangfuseSpanProcessor } from "@langfuse/otel";
+import { LangfuseClient } from "@langfuse/client";
+import { setupPromptsIfNotExistent } from "./lib/prompts";
 
+const langfuse = new LangfuseClient();
 const app = express();
+const otel = new NodeSDK({
+  spanProcessors: [
+    new LangfuseSpanProcessor({
+      exportMode: "immediate",
+    }),
+  ],
+});
+
+otel.start();
 
 // Logging utility
 function log(message: string, source = "express") {
@@ -39,16 +53,18 @@ function serveStatic(app: express.Express) {
   });
 }
 
-declare module 'http' {
+declare module "http" {
   interface IncomingMessage {
-    rawBody: unknown
+    rawBody: unknown;
   }
 }
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
@@ -86,34 +102,40 @@ app.use((req, res, next) => {
   if (process.env.DATABASE_URL) {
     const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
     try {
-      log('Running database migrations...');
-      
+      log("Running database migrations...");
+
       // Use absolute path from process.cwd() for production compatibility
-      const migrationsPath = path.join(process.cwd(), 'migrations');
-      
+      const migrationsPath = path.join(process.cwd(), "migrations");
+
       // Verify migrations folder exists
       if (!fs.existsSync(migrationsPath)) {
         throw new Error(`Migrations folder not found at ${migrationsPath}`);
       }
-      
+
       const migrationDb = drizzle(migrationClient);
       await migrate(migrationDb, { migrationsFolder: migrationsPath });
-      
-      log('✅ Database migrations completed');
+
+      log("✅ Database migrations completed");
     } catch (error) {
-      console.error('❌ Migration failed:', error);
+      console.error("❌ Migration failed:", error);
       process.exit(1);
     } finally {
       await migrationClient.end();
     }
   } else {
-    log('⚠️  DATABASE_URL not set, skipping migrations');
+    log("⚠️  DATABASE_URL not set, skipping migrations");
   }
 
-  const fallbacks = JSON.parse(await readFile("./fallback-photos.json", "utf-8"));
+  log("Setting up prompt templates in Langfuse...");
+  await setupPromptsIfNotExistent(langfuse);
+  log("✅ Prompts set up");
+
+  const fallbacks = JSON.parse(
+    await readFile("./fallback-photos.json", "utf-8"),
+  );
   log(`Loaded ${fallbacks.length} fallback photos from JSON`);
 
-  const server = await registerRoutes(app, fallbacks);
+  const server = await registerRoutes(app, fallbacks, langfuse);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -137,15 +159,33 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
+  const shutdown = () => {
+    log("starting server shutdown...");
+
+    server.close(() => {
+      log("closed server");
+      otel.shutdown();
+      log("shut down telemetry reporting");
+
+      process.exit(1);
+    });
+  };
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 3000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '3000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0"
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  const port = parseInt(process.env.PORT || "3000", 10);
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+    },
+    () => {
+      log(`serving on port ${port}`);
+    },
+  );
 })();

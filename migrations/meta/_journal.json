@@ -8,6 +8,13 @@
       "when": 1762981938963,
       "tag": "0000_narrow_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757635200000,
+      "tag": "0001_widen_language_column",
+      "breakpoints": true
     }
   ]
 }

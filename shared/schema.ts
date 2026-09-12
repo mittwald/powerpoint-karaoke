@@ -8,7 +8,7 @@ export const keywordInputSchema = z.object({
   keyword3: z.string().optional(),
   presenterName: z.string().min(1, "Presenter name is required"),
   difficulty: z.enum(["easy", "medium", "hard"]),
-  language: z.enum(["english", "german"]).default("english"),
+  language: z.enum(["english", "german", "plattdeutsch", "bairisch", "ruhrpott", "scottish"]).default("english"),
   slideCount: z.string().default("15"),
 });
 
@@ -55,7 +55,7 @@ export const presentations = pgTable("presentations", {
   keywords: text("keywords").array().notNull(),
   presenterName: text("presenter_name").notNull(),
   difficulty: varchar("difficulty", { length: 10 }).notNull(),
-  language: varchar("language", { length: 10 }).notNull(),
+  language: varchar("language", { length: 20 }).notNull(),
   slides: jsonb("slides").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

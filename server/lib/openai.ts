@@ -26,15 +26,44 @@ function getModel(): string {
   return process.env.OPENAI_MODEL || DEFAULT_MODEL;
 }
 
+type BaseLanguage = "english" | "german";
+
+// Dialect variants build on top of their parent language's instructions.
+const languageVariants: Record<string, { parent: BaseLanguage; dialect?: string }> = {
+  english: { parent: "english" },
+  german: { parent: "german" },
+  plattdeutsch: {
+    parent: "german",
+    dialect: "Write it in Low German (Plattdeutsch) instead of standard German, using authentic Low German spelling, grammar and vocabulary (e.g. \"Moin\", \"wat\", \"nich\", \"dat\").",
+  },
+  bairisch: {
+    parent: "german",
+    dialect: "Write it in Bavarian dialect (Bairisch) instead of standard German, using authentic Bavarian spelling, grammar and vocabulary (e.g. \"Servus\", \"wos\", \"ned\", \"is\").",
+  },
+  ruhrpott: {
+    parent: "german",
+    dialect: "Write it in Ruhrpott German (Ruhrpottdeutsch) instead of standard German, using authentic Ruhr area spelling, grammar and vocabulary (e.g. \"Glückauf\", \"wat\", \"datt\", \"ma kucken\", \"am Malochen\").",
+  },
+  scottish: {
+    parent: "english",
+    dialect: "Write it in broad Scots / Scottish English instead of standard English, using authentic Scottish spelling, grammar and vocabulary (e.g. \"aye\", \"wee\", \"cannae\", \"ye\").",
+  },
+};
+
+function buildLanguageInstruction(language: string, instructions: Record<BaseLanguage, string>): string {
+  const variant = languageVariants[language] ?? languageVariants.english;
+  return [instructions[variant.parent], variant.dialect].filter(Boolean).join(" ");
+}
+
 export async function generatePresentationTitle(keywords: string[], difficulty: string, language: string): Promise<string> {
   try {
     const openai = getOpenAIClient();
     
-    const languageInstructions = {
+    const languageInstruction = buildLanguageInstruction(language, {
       english: "Generate the title in English.",
       german: "Generate the title in German (Deutsch).",
-    };
-    
+    });
+
     const difficultyInstructions = {
       easy: "Create a professional-sounding presentation title.",
       medium: "Create a humorous, slightly absurd but still professional-sounding and believable presentation title.",
@@ -46,7 +75,7 @@ export async function generatePresentationTitle(keywords: string[], difficulty: 
       messages: [
         {
           role: "system",
-          content: `You are a creative presentation title generator. ${languageInstructions[language as keyof typeof languageInstructions]} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} The titles should combine the given keywords in unexpected ways. You will answer in plain text, without any formatting.`,
+          content: `You are a creative presentation title generator. ${languageInstruction} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} The titles should combine the given keywords in unexpected ways. You will answer in plain text, without any formatting.`,
         },
         {
           role: "user",
@@ -66,11 +95,11 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
   try {
     const openai = getOpenAIClient();
     
-    const languageInstructions = {
+    const languageInstruction = buildLanguageInstruction(language, {
       english: "Generate all content in English.",
       german: "Generate all content in German (Deutsch).",
-    };
-    
+    });
+
     const difficultyInstructions = {
       easy: "Create a professional sounding fictional bio with one or two unusual credentials. Add 2 fun facts that are slightly quirky.",
       medium: "Create a moderately absurd, but still professional sounding fictional bio with several ridiculous but creative credentials. Add 3 fun facts that are slightly absurd and humorous.",
@@ -88,7 +117,7 @@ export async function generatePresenterBio(presenterName: string, keywords: stri
       messages: [
         {
           role: "system",
-          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${languageInstructions[language as keyof typeof languageInstructions]} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. IMPORTANT: Keep bio to maximum 200 characters (1-2 short sentences). Keep each fun fact to maximum 120 characters. Return a JSON object with "bio" (string, max 200 chars) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings, each max 120 chars).`,
+          content: `You are creating a fictional presenter biography for a PowerPoint karaoke presentation. ${languageInstruction} ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]} Include their expertise related to the keywords. IMPORTANT: Keep bio to maximum 200 characters (1-2 short sentences). Keep each fun fact to maximum 120 characters. Return a JSON object with "bio" (string, max 200 chars) and "facts" (array of ${factCount[difficulty as keyof typeof factCount]} strings, each max 120 chars).`,
         },
         {
           role: "user",
@@ -150,11 +179,11 @@ export async function generatePresentationStructure(
     const openai = getOpenAIClient();
     const dynamicSlideCount = slideCount - 3; // Reserve 3 slides for title, bio and thank you
     
-    const languageInstructions = {
+    const languageInstruction = buildLanguageInstruction(language, {
       english: "Generate all text content in English.",
       german: "Generate all text content in German (Deutsch). Use proper German grammar and vocabulary.",
-    };
-    
+    });
+
     const difficultyInstructions = {
       easy: `Create a coherent, professional presentation structure that follows a logical narrative. 
              - Photo search terms should be relevant to the topic
@@ -183,7 +212,7 @@ export async function generatePresentationStructure(
           role: "system",
           content: `You are creating a complete PowerPoint karaoke presentation structure. Generate exactly 13 content slides that form a coherent (or absurd, depending on difficulty) narrative story.
 
-${languageInstructions[language as keyof typeof languageInstructions]}
+${languageInstruction}
 
 ${difficultyInstructions[difficulty as keyof typeof difficultyInstructions]}
 
@@ -273,7 +302,7 @@ ALLOW content that is:
 
 CONTEXT: This is for a PowerPoint Karaoke app that generates humorous presentations. Users may input silly or absurd keywords, which is expected and fine. Only block truly inappropriate or harmful content.
 
-LANGUAGE: Input may be in English or German. Apply moderation standards to both languages.
+LANGUAGE: Input may be in English or German, including dialects such as Scots, Low German (Plattdeutsch), Bavarian (Bairisch) or Ruhrpott German. Apply moderation standards to all of them.
 
 OUTPUT FORMAT:
 Return a JSON object with:

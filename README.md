@@ -11,7 +11,7 @@ An AI-powered web application that generates hilariously random PowerPoint prese
 
 - **AI-Generated Content**: Powered by OpenAI-compatible models (default: gpt-oss-120b via mittwald AI hosting) to create coherent yet absurd presentation narratives
 - **Difficulty Levels**: Choose from Easy (professional), Medium (entertaining), or Hard (completely ridiculous) presentations
-- **Multi-Language Support**: Generate presentations in English or German
+- **Multi-Language Support**: Generate presentations in English or German, or in the Plattdeutsch, Bairisch, Ruhrpott-Deutsch and Scottish dialect variants
 - **Rich Slide Types**: Mix of title slides, photo slides with Unsplash integration, text statements, fake expert quotes, bar charts, and presenter bios
 - **Persistent Presentations**: All presentations are stored persistently in a PostgreSQL database
 - **Shareable Links**: Every presentation gets a unique URL that can be shared with anyone

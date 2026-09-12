@@ -171,6 +171,11 @@ export default function KeywordInput({onSubmit, isLoading}: KeywordInputProps) {
                                                     <SelectContent>
                                                         <SelectItem value="english">English</SelectItem>
                                                         <SelectItem value="german">German</SelectItem>
+                                                        <SelectItem value="plattdeutsch">Plattdeutsch (Low
+                                                            German)</SelectItem>
+                                                        <SelectItem value="bairisch">Bairisch (Bavarian)</SelectItem>
+                                                        <SelectItem value="ruhrpott">Ruhrpott-Deutsch</SelectItem>
+                                                        <SelectItem value="scottish">Scottish</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                                 <FormMessage/>

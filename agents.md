@@ -5,7 +5,7 @@ A web application that generates humorous PowerPoint karaoke presentations from 
 
 ## Features
 - Keyword input interface (3 keywords)
-- Language selector (English/German)
+- Language selector (English/German, plus the Plattdeutsch, Bairisch, Ruhrpott-Deutsch and Scottish dialect variants)
 - Difficulty selector (Easy/Medium/Hard) - controls narrative coherence
 - **Loading screen with humorous messages**: Entertaining overlay during presentation generation
 - AI-generated presentation titles and content using OpenAI

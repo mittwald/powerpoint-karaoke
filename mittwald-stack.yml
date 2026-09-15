@@ -15,13 +15,21 @@ services:
 
   db:
     description: PostgreSQL Database
-    image: postgres:18-alpine
+    # Pinned to a minor version; bumping it (especially the major) is a
+    # deliberate change. See the volume comment below before doing so.
+    image: postgres:18.6-alpine
     envs:
       POSTGRES_USER: powerpoint
       POSTGRES_PASSWORD: {{ .Env.POSTGRES_PASSWORD }}
       POSTGRES_DB: powerpoint_karaoke
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # Postgres 18+ images keep PGDATA in a major-version subdirectory
+      # (/var/lib/postgresql/18/docker), so the volume MUST be mounted at
+      # /var/lib/postgresql. Mounting it at the pre-18 path
+      # /var/lib/postgresql/data makes the container refuse to start.
+      # Do not work around this by setting PGDATA to the legacy path either;
+      # initdb then aborts because the existing 18/ subtree is in the way.
+      - postgres-data:/var/lib/postgresql
     ports:
       - "5432:5432"
 

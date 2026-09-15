@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { generatePresentationTitle, generatePresenterBio, generatePresentationStructure, moderateUserInput } from "./lib/openai";
 import {getRandomPhotosByQuery, PhotoWithAttribution} from "./lib/unsplash";
 import { keywordInputSchema } from "@shared/schema";
-import { storage } from "./storage";
+import { storage, InvalidPresentationError, PresentationSaveError } from "./storage";
 
 export async function registerRoutes(app: Express, fallbackPhotos: PhotoWithAttribution[]): Promise<Server> {
   // Health check endpoint
@@ -16,7 +16,14 @@ export async function registerRoutes(app: Express, fallbackPhotos: PhotoWithAttr
       const validation = keywordInputSchema.safeParse(req.body);
       
       if (!validation.success) {
-        return res.status(400).json({ error: "Invalid keywords" });
+        const details = validation.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        }));
+        return res.status(400).json({
+          error: `Invalid input: ${details.map((d) => `${d.field}: ${d.message}`).join("; ")}`,
+          details,
+        });
       }
 
       const { keyword1, keyword2, keyword3, presenterName, difficulty, language, slideCount } = validation.data;
@@ -131,6 +138,20 @@ export async function registerRoutes(app: Express, fallbackPhotos: PhotoWithAttr
         slides,
       });
     } catch (error) {
+      // Storage errors are logged with column details by the storage layer.
+      if (error instanceof InvalidPresentationError) {
+        return res.status(422).json({
+          error: "The generated presentation contained invalid values and was not saved.",
+          details: error.issues,
+        });
+      }
+      if (error instanceof PresentationSaveError) {
+        console.error("Error saving presentation:", error.cause);
+        return res.status(500).json({
+          error: "The presentation was generated but could not be saved. Please try again later.",
+        });
+      }
+
       console.error("Error generating presentation:", error);
       res.status(500).json({ error: "Failed to generate presentation" });
     }

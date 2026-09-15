@@ -15,6 +15,13 @@
       "when": 1757635200000,
       "tag": "0001_widen_language_column",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789378398713,
+      "tag": "0002_widen_language_check_difficulty",
+      "breakpoints": true
     }
   ]
 }

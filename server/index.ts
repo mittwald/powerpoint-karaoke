@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import {readFile} from "node:fs/promises";
+import { toPhotoWithAttribution, type UnsplashPhoto } from "./lib/unsplash";
 
 const app = express();
 
@@ -153,7 +154,10 @@ async function runMigrations(databaseUrl: string) {
     log('⚠️  DATABASE_URL not set, skipping migrations');
   }
 
-  const fallbacks = JSON.parse(await readFile("./fallback-photos.json", "utf-8"));
+  // The JSON file contains raw Unsplash API responses, which need to be mapped
+  // into the shape that is stored on photo slides.
+  const rawFallbacks: UnsplashPhoto[] = JSON.parse(await readFile("./fallback-photos.json", "utf-8"));
+  const fallbacks = rawFallbacks.map(toPhotoWithAttribution);
   log(`Loaded ${fallbacks.length} fallback photos from JSON`);
 
   const server = await registerRoutes(app, fallbacks);

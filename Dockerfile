@@ -47,11 +47,12 @@ RUN addgroup -g 1001 -S nodejs && \
 USER nodejs
 
 # Expose application port
-EXPOSE 5000
+EXPOSE 3000
 
-# Health check using the /api/health endpoint
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Health check using the /api/health endpoint. The start period covers the
+# startup phase in which the app waits for the database to become available.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=150s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000) + '/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
 
 # Start the production server
 CMD ["npm", "start"]

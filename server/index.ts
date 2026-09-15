@@ -81,30 +81,73 @@ app.use((req, res, next) => {
   next();
 });
 
+// Error codes that indicate the database is (temporarily) unreachable or still
+// starting up, as opposed to errors that will not go away by waiting (bad
+// credentials, broken migration SQL, ...).
+const TRANSIENT_DB_ERROR_CODES = new Set([
+  // network / postgres.js connection errors
+  'ECONNREFUSED', 'ECONNRESET', 'ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT',
+  'EHOSTUNREACH', 'ENETUNREACH', 'CONNECT_TIMEOUT', 'CONNECTION_CLOSED',
+  'CONNECTION_ENDED', 'CONNECTION_DESTROYED',
+  // postgres: admin_shutdown, crash_shutdown, cannot_connect_now, too_many_connections
+  '57P01', '57P02', '57P03', '53300',
+]);
+
+function isTransientDbError(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && TRANSIENT_DB_ERROR_CODES.has(code);
+}
+
+async function withDbRetry<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const maxAttempts = parseInt(process.env.DB_STARTUP_MAX_ATTEMPTS || '15', 10);
+  const maxDelayMs = 10_000;
+  let delayMs = 1_000;
+
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (!isTransientDbError(error) || attempt >= maxAttempts) {
+        throw error;
+      }
+      const code = (error as { code: string }).code;
+      log(`${label}: database unavailable (${code}), attempt ${attempt}/${maxAttempts}, retrying in ${delayMs / 1000}s`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      delayMs = Math.min(delayMs * 2, maxDelayMs);
+    }
+  }
+}
+
+async function runMigrations(databaseUrl: string) {
+  // Use absolute path from process.cwd() for production compatibility
+  const migrationsPath = path.join(process.cwd(), 'migrations');
+
+  // Verify migrations folder exists
+  if (!fs.existsSync(migrationsPath)) {
+    throw new Error(`Migrations folder not found at ${migrationsPath}`);
+  }
+
+  const migrationClient = postgres(databaseUrl, { max: 1, connect_timeout: 10 });
+  try {
+    // Migrations run in a single transaction, so retrying after a dropped
+    // connection is safe.
+    await migrate(drizzle(migrationClient), { migrationsFolder: migrationsPath });
+  } finally {
+    await migrationClient.end({ timeout: 5 });
+  }
+}
+
 (async () => {
   // Run database migrations before starting server
   if (process.env.DATABASE_URL) {
-    const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
+    const databaseUrl = process.env.DATABASE_URL;
     try {
       log('Running database migrations...');
-      
-      // Use absolute path from process.cwd() for production compatibility
-      const migrationsPath = path.join(process.cwd(), 'migrations');
-      
-      // Verify migrations folder exists
-      if (!fs.existsSync(migrationsPath)) {
-        throw new Error(`Migrations folder not found at ${migrationsPath}`);
-      }
-      
-      const migrationDb = drizzle(migrationClient);
-      await migrate(migrationDb, { migrationsFolder: migrationsPath });
-      
+      await withDbRetry('migrations', () => runMigrations(databaseUrl));
       log('✅ Database migrations completed');
     } catch (error) {
       console.error('❌ Migration failed:', error);
       process.exit(1);
-    } finally {
-      await migrationClient.end();
     }
   } else {
     log('⚠️  DATABASE_URL not set, skipping migrations');
